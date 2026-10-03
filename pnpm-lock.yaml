@@ -14,6 +14,9 @@ importers:
       '@fontsource/im-fell-english':
         specifier: ^5.3.0
         version: 5.3.0
+      '@fontsource/zen-old-mincho':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@primer/octicons-react':
         specifier: ^19.38.0
         version: 19.38.0(react@19.3.0)
@@ -62,6 +65,9 @@ packages:
 
   '@fontsource/im-fell-english@5.3.0':
     resolution: {integrity: sha512-FcgdWfY9WeUM2gQkfmwhn4Ed9LVtlll8LSSZvHfbsUrnHK5tHHnGg6BgwAfHogp52adU3eE89J/3B52qV3b+Vw==}
+
+  '@fontsource/zen-old-mincho@5.3.0':
+    resolution: {integrity: sha512-pNvegTkx6rOQRaBMcUoxxeNoIRJajdY0TeX4ngf/26KrtsVoqY11ho6WlwPWDYHi7PY65vf88TV2xjIO+YxQ8Q==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -466,6 +472,8 @@ snapshots:
   '@fontsource/eb-garamond@5.3.0': {}
 
   '@fontsource/im-fell-english@5.3.0': {}
+
+  '@fontsource/zen-old-mincho@5.3.0': {}
 
   '@img/colour@1.1.0':
     optional: true

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
 import Masonry from "./reactbits/Masonry";
 import type { MediaItem } from "@/lib/media";
+import { contentLang } from "@/lib/i18n/config";
 
 type Labels = { close: string; prev: string; next: string; photo: string };
 
@@ -159,7 +160,7 @@ export default function MediaGallery({ items, labels }: Props) {
                   {[item.time, item.placeLabel].filter(Boolean).join(" · ")}
                   {items.length > 1 && <span className="lightbox__count">{`${active! + 1} / ${items.length}`}</span>}
                 </span>
-                {item.caption && <span className="lightbox__text">{item.caption}</span>}
+                {item.caption && <span className="lightbox__text" lang={contentLang}>{item.caption}</span>}
               </figcaption>
             </figure>
             {items.length > 1 && (

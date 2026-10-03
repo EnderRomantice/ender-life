@@ -17,7 +17,7 @@ export const viewport: Viewport = {
   themeColor: "#fbf9f5",
 };
 
-/** 只有 /zh 与 /en；其他前缀 404（无前缀的地址由 proxy.ts 先重定向） */
+/** 只有 /zh、/en、/ru、/ja；其他前缀 404（无前缀的地址由 proxy.ts 先重定向） */
 export const dynamicParams = false;
 
 export function generateStaticParams() {
@@ -37,7 +37,7 @@ export default async function RootLayout({ children, params }: Props) {
         <div className="page">
           <header className="header">
             <Wordmark name={site.name} href={`/${lang}`} />
-            <Nav lang={lang} labels={t.nav} switchLabel={t.switchLabel} switchTitle={t.switchTitle} />
+            <Nav lang={lang} labels={t.nav} language={t.language} />
           </header>
           <main>{children}</main>
         </div>

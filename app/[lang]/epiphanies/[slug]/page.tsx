@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
 import { getEpiphany } from "@/lib/epiphanies";
-import { isLocale, localizePlace } from "@/lib/i18n";
+import { contentLang, isLocale, localizePlace } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -27,8 +27,8 @@ export default async function EpiphanyPage({ params }: Params) {
         <time className="meta-time">{e.time}</time>
         {place && <span className="meta-place">{place}</span>}
       </div>
-      {e.title && <h1 className="article-title">{e.title}</h1>}
-      <div className="prose" dangerouslySetInnerHTML={{ __html: e.html }} />
+      {e.title && <h1 className="article-title" lang={contentLang}>{e.title}</h1>}
+      <div className="prose" lang={contentLang} dangerouslySetInnerHTML={{ __html: e.html }} />
     </article>
     </ViewTransition>
   );

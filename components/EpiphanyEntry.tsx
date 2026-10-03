@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import type { Epiphany } from "@/lib/types";
 import { localizePlace } from "@/lib/i18n";
-import type { Locale } from "@/lib/i18n/config";
+import { contentLang, htmlLang, type Locale } from "@/lib/i18n/config";
 
 type Props = {
   item: Epiphany;
@@ -17,13 +17,14 @@ type Props = {
 
 const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-const moreButton = (label: string) =>
-  '<button type="button" class="more" aria-expanded="false">' +
+/** 「… More」是界面文字，带上界面语言的 lang（外面的正文是中文原文） */
+const moreButton = (label: string, lang: string) =>
+  `<button type="button" class="more" aria-expanded="false" lang="${lang}">` +
   `<span class="more-dots" aria-hidden="true">…</span><span class="more-label">${label}</span></button>`;
 
 /** 把「… More」接在摘要最后一段的末尾 */
-const withMore = (html: string, label: string) => {
-  const more = moreButton(label);
+const withMore = (html: string, label: string, lang: string) => {
+  const more = moreButton(label, lang);
   return html.endsWith("</p>") ? `${html.slice(0, -4)}${more}</p>` : `${html}<p>${more}</p>`;
 };
 
@@ -104,11 +105,11 @@ export default function EpiphanyEntry({ item, order, initial, revealed, expanded
         <time className="meta-time">{item.time}</time>
         {item.place && <span className="meta-place">{localizePlace(item.place, lang)}</span>}
       </div>
-      <div className="body">
+      <div className="body" lang={contentLang}>
         <div
           className="excerpt"
           onClick={item.rest ? onClick : undefined}
-          dangerouslySetInnerHTML={{ __html: item.rest ? withMore(item.excerpt, moreLabel) : item.excerpt }}
+          dangerouslySetInnerHTML={{ __html: item.rest ? withMore(item.excerpt, moreLabel, htmlLang[lang]) : item.excerpt }}
         />
         {item.rest && open && (
           <div

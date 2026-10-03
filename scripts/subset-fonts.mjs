@@ -43,7 +43,12 @@ const text = (await Promise.all([
   ...sourceFiles.map(async (file) => sourceText(file, await readFile(file, "utf8"))),
 ])).join("");
 // Latin text uses the existing western fonts. Sort for reproducible output.
-const characters = [...new Set([...text].filter((char) => char.codePointAt(0) > 0x7f))]
+// 俄文（西里尔字母）走 EB Garamond，日文假名走 Zen Old Mincho，不放进朱雀仿宋
+const otherFonts = (code) => (code >= 0x0400 && code <= 0x04ff) || (code >= 0x3040 && code <= 0x30ff);
+const characters = [...new Set([...text].filter((char) => {
+  const code = char.codePointAt(0);
+  return code > 0x7f && !otherFonts(code);
+}))]
   .sort((a, b) => a.codePointAt(0) - b.codePointAt(0));
 if (!characters.length) throw new Error("No non-ASCII text found for the Chinese font subset");
 

@@ -16,12 +16,23 @@
   --f-serif: "EB Garamond", var(--f-zh), Georgia, serif;
   --f-cjk: var(--f-zh), serif;
   --f-mono: "Meta Mono", var(--f-zh), ui-monospace, monospace;
+  /* 正文（文章、图注）一律是中文原文：任何界面语言下都用同一套字体 */
+  --f-content: "EB Garamond", var(--f-zh), Georgia, serif;
 
   --paper: #fbf9f5;
   --ink: #161411;
   --text: #1f1c18;
   --muted: #6a645c;
   --hair: #e6e1d8;
+}
+
+/*
+ * 日文界面：假名与日文汉字用 Zen Old Mincho（宋体系，和 Garamond 的气质接近），
+ * 西文仍是 EB Garamond。俄文界面：EB Garamond 自带西里尔字母，不用改。
+ */
+:root:lang(ja) {
+  --f-serif: "EB Garamond", "Zen Old Mincho", var(--f-zh), Georgia, serif;
+  --f-mono: "Meta Mono", "Zen Old Mincho", var(--f-zh), ui-monospace, monospace;
 }
 
 *,
@@ -124,22 +135,157 @@ a {
   }
 }
 
-/* 语言切换：比导航小一号，放在最后 */
-.nav .nav-lang {
-  font-size: 13px;
-  letter-spacing: 0.08em;
-}
-
-/* 中文界面：「展开」不用斜体（中文没有真斜体） */
-:lang(zh) .more-label {
+/* 中文、日文界面：「展开 / 続きを読む」不用斜体（汉字假名没有真斜体）。
+   按钮自己带界面语言的 lang，外面的正文是 zh-CN，所以这里匹配元素本身 */
+.more-label:lang(zh),
+.more-label:lang(ja) {
   font-style: normal;
   font-size: 15px;
 }
 
-/* 英文界面：地名是西文，稍大一点、字距收回 */
-:lang(en) .meta-place {
+/* 英文、俄文界面：地名是西文，稍大一点、字距收回 */
+.meta-place:lang(en),
+.meta-place:lang(ru) {
   font-size: 13px;
   letter-spacing: 0.03em;
+}
+
+/* ———— 语言 · 小地球 ———— */
+
+/* 不占导航的排版：按钮只有一个图标那么宽，列表浮在上面 */
+.lang {
+  position: relative;
+  align-self: center;
+  display: flex;
+}
+
+.lang__button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -6px -6px -6px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lang__button svg {
+  fill: currentColor;
+  transform: translateY(1px);
+}
+
+.lang__button[aria-expanded="true"] {
+  color: var(--ink);
+}
+
+@media (hover: hover) {
+  .lang__button:hover {
+    color: var(--ink);
+  }
+}
+
+.lang__button:focus-visible {
+  outline: 1px solid var(--hair);
+  outline-offset: 0;
+}
+
+.lang__list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 12px);
+  right: -8px;
+  min-width: 128px;
+  margin: 0;
+  padding: 8px 0;
+  list-style: none;
+  background: var(--paper);
+  border: 1px solid var(--hair);
+  border-radius: 3px;
+  box-shadow: 0 10px 30px -12px rgb(22 20 17 / 0.14);
+  transform-origin: calc(100% - 22px) 0;
+  animation: lang-in 0.22s cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+.lang[data-state="closing"] .lang__list {
+  animation: lang-out 0.14s cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
+}
+
+.lang__list[hidden] {
+  display: none;
+}
+
+@keyframes lang-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+@keyframes lang-out {
+  to {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.99);
+  }
+}
+
+.lang__item {
+  position: relative;
+  display: block;
+  padding: 3px 22px 3px 30px;
+  font-size: 15px;
+  line-height: 1.9;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--muted);
+  transition: color 0.3s ease;
+}
+
+/* 每个语言名用它自己的字体写 */
+.lang__item--zh {
+  font-family: var(--f-zh), serif;
+}
+.lang__item--en,
+.lang__item--ru {
+  font-family: "EB Garamond", Georgia, serif;
+}
+.lang__item--ja {
+  font-family: "EB Garamond", "Zen Old Mincho", serif;
+}
+
+.lang__item[aria-current="true"] {
+  color: var(--ink);
+}
+
+/* 当前语言：左边一个小墨点 */
+.lang__item[aria-current="true"]::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+@media (hover: hover) {
+  .lang__item:hover {
+    color: var(--ink);
+  }
+}
+
+.lang__item:focus-visible {
+  outline: none;
+  color: var(--ink);
+  background: #f3efe7;
 }
 
 @media (forced-colors: active) {
@@ -200,6 +346,15 @@ a {
 
 .body {
   color: var(--text);
+}
+
+/* 原文（中文）：不随界面语言换字体 */
+.body,
+.prose,
+.article-title,
+.fan__preview,
+.lightbox__text {
+  font-family: var(--f-content);
 }
 
 /* 中文省略号「……」：西文字体的点贴着基线，抬到汉字的中线上 */
@@ -571,7 +726,6 @@ html.is-scrubbing * {
 
 .article-title {
   margin: 4px 0 40px;
-  font-family: var(--f-serif);
   font-weight: 600;
   font-size: 28px;
   line-height: 1.35;
@@ -594,7 +748,7 @@ html.is-scrubbing * {
 .prose h2,
 .prose h3 {
   margin: 2.2em 0 0.8em;
-  font-family: var(--f-serif);
+  font-family: var(--f-content);
   font-weight: 600;
   font-size: 20px;
   line-height: 1.4;
@@ -946,9 +1100,15 @@ html.is-scrubbing * {
   hanging-punctuation: first;
 }
 
-/* 中文简介：行距回到正文的节奏 */
-:lang(zh) .bio {
+/* 中文、日文简介：行距回到正文的节奏 */
+.bio:lang(zh),
+.bio:lang(ja) {
   line-height: 1.9;
+}
+
+/* 日文：行首不出现小假名、长音等（严格禁则） */
+.bio:lang(ja) {
+  line-break: strict;
 }
 
 .bio p {
@@ -1039,7 +1199,9 @@ html.is-scrubbing * {
   }
   .nav a,
   .more-label,
-  .timeline {
+  .timeline,
+  .lang__list,
+  .lang[data-state="closing"] .lang__list {
     transition: none;
     animation: none;
   }
