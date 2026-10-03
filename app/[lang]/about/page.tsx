@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
 import { MailIcon, MarkGithubIcon } from "@primer/octicons-react";
 import { site } from "@/lib/site";
+import { markdown } from "@/lib/markdown";
 import { getDictionary, isLocale } from "@/lib/i18n";
 import Magnet from "@/components/reactbits/Magnet";
 
@@ -46,13 +47,7 @@ export default async function AboutPage({ params }: Props) {
       <h1 className="sr-only">{site.name}</h1>
       {site.motto && <p className="motto">“{site.motto}”</p>}
 
-      {bio.length > 0 && (
-        <div className="bio">
-          {bio.map((line, i) => (
-            <p key={i}>{line}</p>
-          ))}
-        </div>
-      )}
+      {bio.length > 0 && <div className="bio" dangerouslySetInnerHTML={{ __html: markdown(bio.join("\n\n")) }} />}
 
       {(site.email || site.github) && (
         <section className="contact">
