@@ -1,30 +1,10 @@
 import type { Metadata } from "next";
+import { MailIcon, MarkGithubIcon } from "@primer/octicons-react";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = { title: "About" };
 
-/* 细线图标：与正文同色系，描边 1.25 */
-function MailIcon() {
-  return (
-    <svg className="about-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="3" y="5.5" width="18" height="13" rx="1.5" />
-      <path d="M3.5 6.5 12 13l8.5-6.5" />
-    </svg>
-  );
-}
-
-function CodeIcon() {
-  return (
-    <svg className="about-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="6" cy="5.5" r="2" />
-      <circle cx="6" cy="18.5" r="2" />
-      <circle cx="18" cy="7.5" r="2" />
-      <path d="M6 7.5v9" />
-      <path d="M18 9.5c0 4.5-6 4-10.6 7.6" />
-    </svg>
-  );
-}
-
+/* 图标来自 GitHub 官方的 Octicons（MIT）：邮件与 GitHub 标志，同一套线宽 */
 export default function AboutPage() {
   return (
     <article className="about">
@@ -55,7 +35,7 @@ export default function AboutPage() {
           {site.email && (
             <p>
               <a className="about-link" href={`mailto:${site.email}`}>
-                <MailIcon />
+                <MailIcon className="about-icon" size={16} aria-hidden />
                 <span>{site.email}</span>
               </a>
             </p>
@@ -68,7 +48,7 @@ export default function AboutPage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <CodeIcon />
+                <MarkGithubIcon className="about-icon" size={16} aria-hidden />
                 <span>github.com/{site.github}</span>
               </a>
             </p>

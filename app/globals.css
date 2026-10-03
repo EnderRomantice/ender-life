@@ -521,16 +521,18 @@ a {
   transition: text-decoration-color 0.3s ease;
 }
 
+/* 图标居中对齐小写字母（x-height）的中线，而不是整行的中线 */
 .about-icon {
   flex: none;
   width: 16px;
   height: 16px;
-  fill: none;
-  stroke: var(--muted);
-  stroke-width: 1.25;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: stroke 0.3s ease;
+  fill: var(--muted);
+  transform: translateY(0.11em);
+  transition: fill 0.3s ease;
+}
+
+.about-icon.octicon-mark-github {
+  transform: translateY(0.17em);
 }
 
 .about-link:hover span {
@@ -538,7 +540,7 @@ a {
 }
 
 .about-link:hover .about-icon {
-  stroke: var(--ink);
+  fill: var(--ink);
 }
 
 @media (prefers-reduced-motion: reduce) {
