@@ -192,10 +192,15 @@ a {
   color: var(--ink);
 }
 
+/* 引用（> 开头）：斜体、变淡、虚线下划线 */
 .body blockquote {
-  padding-left: 1.2em;
-  border-left: 1px solid var(--hair);
+  font-style: italic;
   color: var(--muted);
+  text-decoration: underline dashed;
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgba(106, 100, 92, 0.45);
+  text-underline-offset: 6px;
+  text-decoration-skip-ink: none;
 }
 
 .body blockquote p {
@@ -312,9 +317,13 @@ a {
 
 .prose blockquote {
   margin: 1.8em 0;
-  padding-left: 1.2em;
-  border-left: 1px solid var(--hair);
+  font-style: italic;
   color: var(--muted);
+  text-decoration: underline dashed;
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgba(106, 100, 92, 0.45);
+  text-underline-offset: 6px;
+  text-decoration-skip-ink: none;
 }
 
 .prose blockquote p {
