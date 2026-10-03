@@ -37,7 +37,8 @@ export default function AboutPage() {
         )}
       </figure>
 
-      <h1 className="name">{site.name}</h1>
+      {/* 名字已在左上角，这里只留给读屏软件 */}
+      <h1 className="sr-only">{site.name}</h1>
       {site.motto && <p className="motto">“{site.motto}”</p>}
 
       {site.bio.length > 0 && (
