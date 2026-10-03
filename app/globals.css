@@ -162,9 +162,10 @@ a {
 .lang__button {
   display: grid;
   place-items: center;
+  /* 点击区域 28px，但只占图标那么大的位置：和前面文字的间距与导航项之间一致 */
   width: 28px;
   height: 28px;
-  margin: -6px -6px -6px 0;
+  margin: -6px -7px;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -175,9 +176,20 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* 图标高度与汉字的字面一致（16px 字号 ≈ 14px 字面），中心对齐文字 */
 .lang__button svg {
+  width: 14px;
+  height: 14px;
   fill: currentColor;
-  transform: translateY(1px);
+  transform: translateY(-0.5px);
+}
+
+@media (max-width: 640px) {
+  .lang__button svg {
+    width: 13px;
+    height: 13px;
+    transform: none;
+  }
 }
 
 .lang__button[aria-expanded="true"] {
@@ -207,7 +219,7 @@ a {
   background: var(--paper);
   border: 1px solid var(--hair);
   border-radius: 3px;
-  box-shadow: 0 10px 30px -12px rgb(22 20 17 / 0.14);
+  box-shadow: 0 2px 6px -3px rgb(22 20 17 / 0.06);
   transform-origin: calc(100% - 22px) 0;
   animation: lang-in 0.22s cubic-bezier(0.2, 0, 0, 1) both;
 }
