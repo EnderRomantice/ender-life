@@ -18,4 +18,4 @@ export type EpiphanyArticle = Epiphany & {
 };
 
 /** 左侧时间刻度上的一格 */
-export type TimelineMark = { slug: string; label: string; title: string };
+export type TimelineMark = { slug: string; label: string; title: string; preview: string };

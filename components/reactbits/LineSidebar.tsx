@@ -180,6 +180,7 @@ const LineSidebar = ({
             <button
               type="button"
               className="line-sidebar__button"
+              data-index={index}
               title={titles?.[index]}
               aria-label={titles?.[index] ?? text}
               aria-current={activeIndex === index ? "true" : undefined}

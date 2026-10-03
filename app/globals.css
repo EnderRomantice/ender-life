@@ -320,6 +320,131 @@ a {
   }
 }
 
+.timeline {
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.timeline .line-sidebar {
+  transition:
+    transform 0.3s ease,
+    opacity 0.15s ease;
+}
+
+/* 按住时整列刻度向正文方向「蓄力」，到时间后展开成扇形 */
+.timeline--pressing {
+  cursor: grabbing;
+}
+
+.timeline--pressing .line-sidebar {
+  transform: translateX(6px);
+  transition-duration: 0.38s;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.timeline--fanned .line-sidebar {
+  opacity: 0;
+}
+
+/* ———— 扇形时间轴（React Bits · OptionWheel） ———— */
+
+.fan {
+  --fan-inset: max(24px, calc(50vw - 470px));
+
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.fan__veil {
+  position: absolute;
+  inset: 0;
+  background: var(--paper);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.fan--open .fan__veil {
+  opacity: 0.96;
+  transition-duration: 0.3s;
+}
+
+.fan__item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.fan__tick {
+  flex: none;
+  width: 18px;
+  height: 1px;
+  margin-right: calc(10px + var(--ow-p, 0) * 14px);
+  background: color-mix(in srgb, var(--ink) calc(var(--ow-p, 0) * 100%), #d3ccc0);
+  transform-origin: left center;
+  transform: scaleX(calc(1 + var(--ow-p, 0) * 0.8));
+}
+
+.fan__label {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--ink) calc(var(--ow-p, 0) * 100%), var(--muted));
+  transform-origin: left center;
+  transform: scale(calc(1 + var(--ow-p, 0) * 0.25));
+}
+
+.fan__caption {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: calc(var(--fan-inset) + 150px);
+  max-width: min(420px, calc(100vw - var(--fan-inset) - 190px));
+  transform: translateY(-50%);
+  pointer-events: none;
+  animation: fan-caption 0.3s cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+.fan__meta {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.fan__preview {
+  margin: 8px 0 0;
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--ink);
+}
+
+.fan__hint {
+  position: absolute;
+  z-index: 2;
+  left: var(--fan-inset);
+  bottom: 32px;
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  opacity: 0.7;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.fan:not(.fan--open) .fan__caption,
+.fan:not(.fan--open) .fan__hint {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+@keyframes fan-caption {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-50% + 4px));
+  }
+}
+
 /* ———— article ———— */
 
 .article {
@@ -635,6 +760,15 @@ a {
     animation: none;
   }
   .line-sidebar__label {
+    transform: none;
+  }
+  .timeline .line-sidebar,
+  .fan__veil,
+  .fan__caption {
+    transition: none;
+    animation: none;
+  }
+  .timeline--pressing .line-sidebar {
     transform: none;
   }
   .avatar img {

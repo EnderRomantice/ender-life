@@ -87,6 +87,23 @@ export function getEpiphany(slug: string): EpiphanyArticle | null {
   return all().find((x) => x.slug === slug) ?? null;
 }
 
+/** 摘要的第一句左右，纯文本，给扇形时间轴里的预览用 */
+function preview(html: string, max = 48): string {
+  const text = html
+    .replace(/<br\s*\/?>|<\/p>\s*<p>/g, "\u0001") // 换行 / 分段处
+    .replace(/<[^>]+>/g, "")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    // 断在中文标点后的直接接上，其余留一个空格
+    .replace(/([，。！？；：、…」』）”])\s*\u0001\s*/g, "$1")
+    .replace(/\s*\u0001\s*/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return [...text].length > max ? `${[...text].slice(0, max).join("")}…` : text;
+}
+
 /** 左侧时间刻度：所有条目的日期（不含正文），按时间倒序 */
 export function getTimeline(): TimelineMark[] {
   return all().map((e) => {
@@ -95,6 +112,7 @@ export function getTimeline(): TimelineMark[] {
       slug: e.slug,
       label: m ? `${m[2]}.${m[3]}` : e.time,
       title: [e.time, e.place].filter(Boolean).join(" · "),
+      preview: preview(e.excerpt),
     };
   });
 }

@@ -5,6 +5,7 @@ import { useWindowVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
 import type { Epiphany, TimelineMark } from "@/lib/types";
 import EpiphanyEntry from "./EpiphanyEntry";
 import LineSidebar from "./reactbits/LineSidebar";
+import TimelineFan from "./TimelineFan";
 
 type Props = {
   initialItems: Epiphany[];
@@ -16,6 +17,8 @@ type Props = {
 const JUMP_OFFSET = 88;
 /** 视口中这个高度（比例）所在的条目算作「正在读」 */
 const READING_LINE = 0.3;
+/** 按住刻度多久展开成扇形时间轴 */
+const HOLD_MS = 380;
 
 /** 从全文页返回时，恢复已加载的条目、测量结果和滚动位置 */
 type Snapshot = {
@@ -198,6 +201,40 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline }: 
     };
   }, [jumpTick, virtualizer]);
 
+  // ———— 长按刻度：展开扇形时间轴 ————
+  const [fan, setFan] = useState<{ start: number; hold: { id: number; y: number } | null } | null>(null);
+  const [pressing, setPressing] = useState(false);
+  const press = useRef<{ timer: number; id: number; x: number; y: number } | null>(null);
+  const firedAt = useRef(0);
+
+  const cancelPress = useCallback(() => {
+    if (press.current) window.clearTimeout(press.current.timer);
+    press.current = null;
+    setPressing(false);
+  }, []);
+
+  const onPressStart = (e: React.PointerEvent<HTMLElement>) => {
+    if (e.button !== 0 || fan) return;
+    const btn = (e.target as Element).closest<HTMLElement>("[data-index]");
+    const start = btn ? Number(btn.dataset.index) : active;
+    const { pointerId, clientX, clientY } = e;
+    const timer = window.setTimeout(() => {
+      press.current = null;
+      setPressing(false);
+      firedAt.current = performance.now();
+      setFan({ start, hold: { id: pointerId, y: clientY } });
+    }, HOLD_MS);
+    press.current = { timer, id: pointerId, x: clientX, y: clientY };
+    setPressing(true);
+  };
+
+  const onPressMove = (e: React.PointerEvent<HTMLElement>) => {
+    const p = press.current;
+    if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) > 8) cancelPress();
+  };
+
+  useEffect(() => cancelPress, [cancelPress]);
+
   const lastIndex = virtualItems.at(-1)?.index ?? -1;
   useEffect(() => {
     if (mounted && lastIndex >= items.length - 2) loadMore();
@@ -243,7 +280,23 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline }: 
       ))}
     </div>
     {timeline.length > 1 && (
-      <aside className="timeline">
+      <aside
+        className={["timeline", pressing && "timeline--pressing", fan && "timeline--fanned"].filter(Boolean).join(" ")}
+        title="按住展开时间轴"
+        onPointerDown={onPressStart}
+        onPointerMove={onPressMove}
+        onPointerUp={cancelPress}
+        onPointerLeave={cancelPress}
+        onPointerCancel={cancelPress}
+        onContextMenu={(e) => e.preventDefault()}
+        onClickCapture={(e) => {
+          // 长按展开后松手产生的 click 不算点击
+          if (performance.now() - firedAt.current < 800) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }}
+      >
         <LineSidebar
           items={timeline.map((t) => t.label)}
           titles={timeline.map((t) => t.title)}
@@ -258,6 +311,15 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline }: 
           onItemClick={(i) => jumpTo(i)}
         />
       </aside>
+    )}
+    {fan && (
+      <TimelineFan
+        marks={timeline}
+        start={fan.start}
+        hold={fan.hold}
+        onJump={(i) => jumpTo(i)}
+        onClosed={() => setFan(null)}
+      />
     )}
     </>
   );
