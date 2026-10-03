@@ -181,6 +181,17 @@ a {
   color: var(--text);
 }
 
+/* 中文省略号「……」：西文字体的点贴着基线，抬到汉字的中线上 */
+.ellip {
+  display: inline-block;
+  transform: translateY(-0.3em);
+}
+
+/* 中文破折号「——」：用朱雀仿宋的字形，两段连成一条 */
+.dash {
+  font-family: var(--f-zh);
+}
+
 /* 段落之间空一整行，与行高同步 */
 .excerpt > *,
 .rest > * {
@@ -715,8 +726,11 @@ html.is-scrubbing * {
 
 /* ———— about · 简介 ———— */
 
+/* 简介是英文段落：行距比中文正文收一些，段与段之间留出呼吸 */
 .bio {
   margin-top: 28px;
+  line-height: 1.7;
+  hanging-punctuation: first;
 }
 
 .bio p {
@@ -724,7 +738,7 @@ html.is-scrubbing * {
 }
 
 .bio p + p {
-  margin-top: 0.4em;
+  margin-top: 0.85em;
 }
 
 /* Contact：与简介同字号、同节奏，只用一条细下划线区分链接 */

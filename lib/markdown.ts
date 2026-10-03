@@ -4,7 +4,8 @@
  * 块：段落（段内单个换行即换行）、# / ## / ### 标题、> 引用、--- 分隔线、
  *     - / 1. 列表、``` 代码块
  * 行内：**粗体**、*斜体*、***粗斜体***、~~删除线~~、`代码`、[链接](url)、![图片](url)、
- *     \* 转义
+ *     \* 转义；中文省略号「……」、破折号「——」各包一层 span，
+ *     用来把点抬到中线、让破折号连成一条
  */
 
 const esc = (s: string) =>
@@ -31,7 +32,9 @@ function inline(src: string): string {
         .replace(/\*\*\*([^*]+)\*\*\*/g, "<strong><em>$1</em></strong>")
         .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
         .replace(/\*([^*\s](?:[^*]*[^*\s])?)\*/g, "<em>$1</em>")
-        .replace(/~~([^~]+)~~/g, "<del>$1</del>");
+        .replace(/~~([^~]+)~~/g, "<del>$1</del>")
+        .replace(/\u2026{2,}/g, '<span class="ellip">$&</span>')
+        .replace(/\u2014{2,}/g, '<span class="dash">$&</span>');
     })
     .join("");
 
