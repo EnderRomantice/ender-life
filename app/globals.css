@@ -162,39 +162,109 @@ a {
   color: var(--text);
 }
 
-.body p {
+/* 段落之间空一整行，与行高同步 */
+.excerpt > *,
+.rest > * {
   margin: 0;
 }
 
-/* 段落之间空一整行，与行高同步 */
-.body p + p {
+.excerpt > * + *,
+.rest > * + *,
+.rest > :first-child {
   margin-top: 1.95em;
 }
 
-/* 可以点进全文的条目 */
-.entry-link {
-  display: block;
+/* 在段落中间截断时，展开的部分紧接着换行，不另起一段 */
+.rest--cont > :first-child {
+  margin-top: 0;
 }
 
-.entry-link .body {
-  transition: color 0.2s ease;
+.rest {
+  display: flow-root;
+  outline: none;
 }
 
-.entry-link .body > :last-child::after {
-  content: "→";
-  display: inline-block;
-  margin-left: 0.5em;
+.body h2,
+.body h3 {
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.body blockquote {
+  padding-left: 1.2em;
+  border-left: 1px solid var(--hair);
   color: var(--muted);
-  transition: transform 0.2s ease, color 0.2s ease;
 }
 
-.entry-link:hover .body {
+.body blockquote p {
+  margin: 0;
+}
+
+.body hr {
+  width: 48px;
+  height: 1px;
+  border: 0;
+  background: var(--hair);
+}
+
+.body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.body ul,
+.body ol {
+  padding-left: 1.4em;
+}
+
+/* 「… More」：淡淡地接在摘要末尾 */
+.more {
+  margin: 0 0 0 0.4em;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.more-dots {
+  margin-right: 0.5em;
+  opacity: 0.55;
+  letter-spacing: 0.08em;
+}
+
+.more-label {
+  font-family: var(--f-serif);
+  font-style: italic;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+
+.more:hover {
   color: var(--ink);
 }
 
-.entry-link:hover .body > :last-child::after {
-  color: var(--ink);
-  transform: translateX(3px);
+.more:focus-visible {
+  outline: 1px solid var(--hair);
+  outline-offset: 4px;
+}
+
+.is-open .more {
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    visibility 0s linear 0.3s;
 }
 
 /* ———— article ———— */
@@ -259,14 +329,16 @@ a {
   background: var(--hair);
 }
 
-.prose a {
+.prose a,
+.body a {
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
   text-decoration-color: var(--hair);
 }
 
-.prose a:hover {
+.prose a:hover,
+.body a:hover {
   text-decoration-color: currentColor;
 }
 
@@ -277,7 +349,8 @@ a {
   margin: 2em 0;
 }
 
-.prose code {
+.prose code,
+.body code {
   font-family: var(--f-mono);
   font-size: 0.88em;
 }

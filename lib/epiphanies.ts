@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { markdown } from "./markdown";
+import { split } from "./excerpt";
 import type { Epiphany, EpiphanyArticle } from "./types";
 
 /**
@@ -14,8 +15,8 @@ import type { Epiphany, EpiphanyArticle } from "./types";
  *   title: ……                  可选，只在全文页显示
  *   ---
  *   正文……
- *   <!-- more -->              可选：之前的部分出现在列表，之后的部分只在全文页
- *   全文……
+ *   <!-- more -->              可选：手动指定截断位置；不写则自动在约 120 字处截断（见 excerpt.ts）
+ *   其余……                     列表里点 More 原地展开
  */
 
 const DIR = path.join(process.cwd(), "content", "epiphanies");
@@ -35,8 +36,10 @@ function parse(file: string): Entry {
     }
     body = m[2];
   }
-  const [head, ...rest] = body.split(MORE);
-  const hasMore = rest.length > 0 && rest.join("").trim().length > 0;
+  const [head, ...more] = body.split(MORE);
+  const manual = more.join("\n\n").trim();
+  const full = body.replace(MORE, "").trim();
+  const parts = manual ? { head: head.trim(), rest: manual, cont: false } : split(full);
   return {
     slug: file.replace(/\.md$/, ""),
     date: meta.date ?? "",
@@ -44,9 +47,10 @@ function parse(file: string): Entry {
     place: meta.place ?? "",
     author: meta.author ?? "",
     title: meta.title || undefined,
-    excerpt: markdown(head.trim()),
-    hasMore,
-    html: markdown(body.replace(MORE, "").trim()),
+    excerpt: markdown(parts.head),
+    rest: parts.rest ? markdown(parts.rest) : null,
+    cont: parts.cont,
+    html: markdown(full),
   };
 }
 
@@ -64,21 +68,21 @@ export const PAGE_SIZE = 6;
 export function getEpiphanies(cursor = 0, limit = PAGE_SIZE): { items: Epiphany[]; nextCursor: number | null } {
   const list = all();
   const start = Math.max(0, cursor);
-  const items = list.slice(start, start + limit).map(({ slug, time, place, author, title, excerpt, hasMore }) => ({
+  const items = list.slice(start, start + limit).map(({ slug, time, place, author, title, excerpt, rest, cont }) => ({
     slug,
     time,
     place,
     author,
     title,
     excerpt,
-    hasMore,
+    rest,
+    cont,
   }));
   const next = start + limit;
   return { items, nextCursor: next < list.length ? next : null };
 }
 
+/** 单篇的固定链接（列表里不再跳转，但保留地址方便分享） */
 export function getEpiphany(slug: string): EpiphanyArticle | null {
-  const e = all().find((x) => x.slug === slug);
-  if (!e || !e.hasMore) return null;
-  return e;
+  return all().find((x) => x.slug === slug) ?? null;
 }

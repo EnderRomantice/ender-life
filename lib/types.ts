@@ -6,8 +6,10 @@ export type Epiphany = {
   title?: string;
   /** 列表中显示的部分（HTML） */
   excerpt: string;
-  /** 有 <!-- more --> 时可点进全文 */
-  hasMore: boolean;
+  /** 截断后剩余的部分（HTML），点 More 原地展开；不截断时为 null */
+  rest: string | null;
+  /** 截断点在段落中间，展开部分紧接上一行 */
+  cont: boolean;
 };
 
 export type EpiphanyArticle = Epiphany & {

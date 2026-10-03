@@ -17,6 +17,7 @@ type Snapshot = {
   measurements: VirtualItem[];
   scrollY: number;
   revealed: Set<string>;
+  expanded: Set<string>;
 };
 let snapshot: Snapshot | null = null;
 let popped = false;
@@ -42,6 +43,7 @@ export default function EpiphanyList({ initialItems, initialCursor }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
   const loading = useRef(false);
   const revealed = useRef(restored?.revealed ?? new Set(initialItems.map((i) => i.slug)));
+  const expanded = useRef(restored?.expanded ?? new Set<string>());
   const initialSlugs = useRef(new Set(restored ? [] : initialItems.map((i) => i.slug)));
 
   useIsoLayoutEffect(() => {
@@ -80,6 +82,7 @@ export default function EpiphanyList({ initialItems, initialCursor }: Props) {
         measurements: virtualizer.measurementsCache,
         scrollY: window.scrollY,
         revealed: revealed.current,
+        expanded: expanded.current,
       };
     },
     [virtualizer],
@@ -138,6 +141,7 @@ export default function EpiphanyList({ initialItems, initialCursor }: Props) {
             order={index}
             initial={initialSlugs.current.has(item.slug)}
             revealed={revealed.current}
+            expanded={expanded.current}
           />
         </div>
       ))}
