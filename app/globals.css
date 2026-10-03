@@ -84,6 +84,7 @@ a {
 
 .nav {
   display: flex;
+  align-items: baseline;
   gap: 28px;
   font-family: var(--f-serif);
   font-size: 16px;
@@ -119,6 +120,24 @@ a {
     transition-duration: 0.9s;
     transition-timing-function: cubic-bezier(0.3, 0, 0.2, 1);
   }
+}
+
+/* 语言切换：比导航小一号，放在最后 */
+.nav .nav-lang {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+/* 中文界面：「展开」不用斜体（中文没有真斜体） */
+:lang(zh) .more-label {
+  font-style: normal;
+  font-size: 15px;
+}
+
+/* 英文界面：地名是西文，稍大一点、字距收回 */
+:lang(en) .meta-place {
+  font-size: 13px;
+  letter-spacing: 0.03em;
 }
 
 @media (forced-colors: active) {
@@ -731,6 +750,11 @@ html.is-scrubbing * {
   margin-top: 28px;
   line-height: 1.7;
   hanging-punctuation: first;
+}
+
+/* 中文简介：行距回到正文的节奏 */
+:lang(zh) .bio {
+  line-height: 1.9;
 }
 
 .bio p {

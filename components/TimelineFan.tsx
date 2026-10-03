@@ -7,6 +7,8 @@ import OptionWheel from "./reactbits/OptionWheel";
 
 type Props = {
   marks: TimelineMark[];
+  label: string;
+  hint: string;
   start: number;
   /** 长按时按下的指针：打开后一直按着，滑动拨动，松手结束 */
   hold: { id: number; y: number };
@@ -20,7 +22,7 @@ type Props = {
  * 长按后展开的扇形时间轴（React Bits · OptionWheel）。
  * 按住不放：上下滑动或滚轮拨动；松手跳到停住的那一篇（没动过就只收起）；Esc 取消。
  */
-export default function TimelineFan({ marks, start, hold, onJump, onEnd, onClosed }: Props) {
+export default function TimelineFan({ marks, label, hint, start, hold, onJump, onEnd, onClosed }: Props) {
   const [open, setOpen] = useState(true);
   const [selected, setSelected] = useState(start);
   const mark = marks[selected];
@@ -40,7 +42,7 @@ export default function TimelineFan({ marks, start, hold, onJump, onEnd, onClose
         defaultSelected={start}
         hold={hold}
         open={open}
-        label="时间线"
+        label={label}
         rowHeight={36}
         tilt={7.5}
         fade={0.16}
@@ -64,7 +66,7 @@ export default function TimelineFan({ marks, start, hold, onJump, onEnd, onClose
         </div>
       )}
       <p className="fan__hint" aria-hidden="true">
-        按住上下滑动 · 松手跳转 · Esc 取消
+        {hint}
       </p>
     </div>,
     document.body,

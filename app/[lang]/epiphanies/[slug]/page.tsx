@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
 import { getEpiphany } from "@/lib/epiphanies";
+import { isLocale, localizePlace } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
-type Params = { params: Promise<{ slug: string }> };
+type Params = { params: Promise<{ lang: string; slug: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const e = getEpiphany((await params).slug);
@@ -14,15 +15,17 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default async function EpiphanyPage({ params }: Params) {
-  const e = getEpiphany((await params).slug);
-  if (!e) notFound();
+  const { lang, slug } = await params;
+  const e = getEpiphany(slug);
+  if (!e || !isLocale(lang)) notFound();
+  const place = localizePlace(e.place, lang);
 
   return (
     <ViewTransition>
     <article className="article">
       <div className="meta">
         <time className="meta-time">{e.time}</time>
-        {e.place && <span className="meta-place">{e.place}</span>}
+        {place && <span className="meta-place">{place}</span>}
       </div>
       {e.title && <h1 className="article-title">{e.title}</h1>}
       <div className="prose" dangerouslySetInnerHTML={{ __html: e.html }} />

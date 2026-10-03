@@ -35,7 +35,8 @@ const markdownFiles = await filesIn(path.join(root, "content"), ".md");
 const sourceFiles = [
   ...await filesIn(path.join(root, "app"), ".tsx"),
   ...await filesIn(path.join(root, "components"), ".tsx"),
-  path.join(root, "lib/site.ts"),
+  // lib 下的文案：站点信息、界面翻译（lib/i18n）等
+  ...await filesIn(path.join(root, "lib"), ".ts"),
 ];
 const text = (await Promise.all([
   ...markdownFiles.map((file) => readFile(file, "utf8")),

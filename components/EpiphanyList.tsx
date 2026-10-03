@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useWindowVirtualizer, type VirtualItem } from "@tanstack/react-virtual";
 import type { Epiphany, TimelineMark } from "@/lib/types";
+import type { Locale } from "@/lib/i18n/config";
 import EpiphanyEntry from "./EpiphanyEntry";
 import LineSidebar from "./reactbits/LineSidebar";
 import TimelineFan from "./TimelineFan";
@@ -11,6 +12,9 @@ type Props = {
   initialItems: Epiphany[];
   initialCursor: number | null;
   timeline: TimelineMark[];
+  lang: Locale;
+  /** 界面文字（来自 lib/i18n） */
+  t: { more: string; timeline: string; fanHint: string };
 };
 
 /** 跳转到某条时，让它停在视口顶部往下这么多像素 */
@@ -39,7 +43,7 @@ if (typeof window !== "undefined") {
 
 const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-export default function EpiphanyList({ initialItems, initialCursor, timeline }: Props) {
+export default function EpiphanyList({ initialItems, initialCursor, timeline, lang, t }: Props) {
   // 只有浏览器后退/前进时才恢复；从导航点进来则从头开始
   const [restored] = useState(() => {
     const s = popped ? snapshot : null;
@@ -324,6 +328,8 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline }: 
             initial={initialSlugs.current.has(item.slug)}
             revealed={revealed.current}
             expanded={expanded.current}
+            lang={lang}
+            moreLabel={t.more}
           />
         </div>
       ))}
@@ -336,7 +342,7 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline }: 
           items={timeline.map((t) => t.label)}
           titles={timeline.map((t) => t.title)}
           active={active}
-          label="时间线"
+          label={t.timeline}
           proximityRadius={56}
           maxShift={6}
           markerLength={18}
@@ -357,6 +363,8 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline }: 
     {fan && (
       <TimelineFan
         marks={timeline}
+        label={t.timeline}
+        hint={t.fanHint}
         start={fan.start}
         hold={fan.hold}
         onJump={(i) => jumpTo(i)}

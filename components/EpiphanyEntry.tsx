@@ -2,6 +2,8 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import type { Epiphany } from "@/lib/types";
+import { localizePlace } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n/config";
 
 type Props = {
   item: Epiphany;
@@ -9,22 +11,26 @@ type Props = {
   initial: boolean;
   revealed: Set<string>;
   expanded: Set<string>;
+  lang: Locale;
+  moreLabel: string;
 };
 
 const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-const MORE =
+const moreButton = (label: string) =>
   '<button type="button" class="more" aria-expanded="false">' +
-  '<span class="more-dots" aria-hidden="true">…</span><span class="more-label">More</span></button>';
+  `<span class="more-dots" aria-hidden="true">…</span><span class="more-label">${label}</span></button>`;
 
 /** 把「… More」接在摘要最后一段的末尾 */
-const withMore = (html: string) =>
-  html.endsWith("</p>") ? `${html.slice(0, -4)}${MORE}</p>` : `${html}<p>${MORE}</p>`;
+const withMore = (html: string, label: string) => {
+  const more = moreButton(label);
+  return html.endsWith("</p>") ? `${html.slice(0, -4)}${more}</p>` : `${html}<p>${more}</p>`;
+};
 
 // 起步柔和、落地更柔和，避免「唰」一下撑开
 const EASE = "cubic-bezier(0.33, 0, 0.2, 1)";
 
-export default function EpiphanyEntry({ item, order, initial, revealed, expanded }: Props) {
+export default function EpiphanyEntry({ item, order, initial, revealed, expanded, lang, moreLabel }: Props) {
   const ref = useRef<HTMLElement>(null);
   const restRef = useRef<HTMLDivElement>(null);
   const [veiled, setVeiled] = useState(() => !initial && !revealed.has(item.slug));
@@ -96,13 +102,13 @@ export default function EpiphanyEntry({ item, order, initial, revealed, expanded
     >
       <div className="meta">
         <time className="meta-time">{item.time}</time>
-        {item.place && <span className="meta-place">{item.place}</span>}
+        {item.place && <span className="meta-place">{localizePlace(item.place, lang)}</span>}
       </div>
       <div className="body">
         <div
           className="excerpt"
           onClick={item.rest ? onClick : undefined}
-          dangerouslySetInnerHTML={{ __html: item.rest ? withMore(item.excerpt) : item.excerpt }}
+          dangerouslySetInnerHTML={{ __html: item.rest ? withMore(item.excerpt, moreLabel) : item.excerpt }}
         />
         {item.rest && open && (
           <div

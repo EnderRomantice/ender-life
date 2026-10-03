@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { markdown } from "./markdown";
 import { split } from "./excerpt";
+import { localizePlace, type Locale } from "./i18n";
 import type { Epiphany, EpiphanyArticle, TimelineMark } from "./types";
 
 /**
@@ -105,13 +106,13 @@ function preview(html: string, max = 48): string {
 }
 
 /** 左侧时间刻度：所有条目的日期（不含正文），按时间倒序 */
-export function getTimeline(): TimelineMark[] {
+export function getTimeline(lang: Locale): TimelineMark[] {
   return all().map((e) => {
     const m = e.date.match(/^(\d{4})-(\d{2})-(\d{2})/);
     return {
       slug: e.slug,
       label: m ? `${m[2]}.${m[3]}` : e.time,
-      title: [e.time, e.place].filter(Boolean).join(" · "),
+      title: [e.time, localizePlace(e.place, lang)].filter(Boolean).join(" · "),
       preview: preview(e.excerpt),
     };
   });

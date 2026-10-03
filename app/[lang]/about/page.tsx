@@ -1,13 +1,25 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
 import { MailIcon, MarkGithubIcon } from "@primer/octicons-react";
 import { site } from "@/lib/site";
+import { getDictionary, isLocale } from "@/lib/i18n";
 import Magnet from "@/components/reactbits/Magnet";
 
-export const metadata: Metadata = { title: "About" };
+type Props = { params: Promise<{ lang: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lang } = await params;
+  return { title: isLocale(lang) ? getDictionary(lang).aboutTitle : "About" };
+}
 
 /* 图标来自 GitHub 官方的 Octicons（MIT）：邮件与 GitHub 标志，同一套线宽 */
-export default function AboutPage() {
+export default async function AboutPage({ params }: Props) {
+  const { lang } = await params;
+  if (!isLocale(lang)) notFound();
+  const t = getDictionary(lang);
+  const bio = site.bio[lang];
+
   return (
     <ViewTransition>
     <article className="about">
@@ -34,9 +46,9 @@ export default function AboutPage() {
       <h1 className="sr-only">{site.name}</h1>
       {site.motto && <p className="motto">“{site.motto}”</p>}
 
-      {site.bio.length > 0 && (
+      {bio.length > 0 && (
         <div className="bio">
-          {site.bio.map((line, i) => (
+          {bio.map((line, i) => (
             <p key={i}>{line}</p>
           ))}
         </div>
@@ -44,7 +56,7 @@ export default function AboutPage() {
 
       {(site.email || site.github) && (
         <section className="contact">
-          <h2>Contact</h2>
+          <h2>{t.contact}</h2>
           {site.email && (
             <p>
               <a className="about-link" href={`mailto:${site.email}`}>
