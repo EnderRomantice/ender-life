@@ -12,6 +12,7 @@ export const dictionaries = {
     contact: "联系",
     timeline: "时间线",
     fanHint: "按住上下滑动 · 松手跳转 · Esc 取消",
+    fanHintTouch: "按住上下滑动 · 松手跳转",
     aboutTitle: "关于",
   },
   en: {
@@ -22,6 +23,7 @@ export const dictionaries = {
     contact: "Contact",
     timeline: "Timeline",
     fanHint: "Hold and slide · Release to jump · Esc to cancel",
+    fanHintTouch: "Hold and slide · Release to jump",
     aboutTitle: "About",
   },
 } satisfies Record<Locale, unknown>;

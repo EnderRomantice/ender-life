@@ -14,7 +14,7 @@ type Props = {
   timeline: TimelineMark[];
   lang: Locale;
   /** 界面文字（来自 lib/i18n） */
-  t: { more: string; timeline: string; fanHint: string };
+  t: { more: string; timeline: string; fanHint: string; fanHintTouch: string };
 };
 
 /** 跳转到某条时，让它停在视口顶部往下这么多像素 */
@@ -205,27 +205,49 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline, la
     };
   }, [jumpTick, virtualizer]);
 
-  // ———— 长按（页面任意处，鼠标）：展开扇形时间轴 ————
-  const [fan, setFan] = useState<{ start: number; hold: { id: number; y: number } } | null>(null);
-  const [press, setPress] = useState<{ x: number; y: number } | null>(null);
+  // ———— 长按（页面任意处，鼠标或手指）：展开扇形时间轴 ————
+  const [fan, setFan] = useState<{ start: number; hold: { id: number; y: number; touch: boolean } } | null>(null);
+  const [press, setPress] = useState<{ x: number; y: number; touch: boolean } | null>(null);
   const activeRef = useRef(active);
   activeRef.current = active;
   const fanOpen = useRef(false);
   fanOpen.current = fan !== null;
   const suppressClickUntil = useRef(0);
+  const unlockTouch = useRef<(() => void) | null>(null);
+
+  /** 手指按住展开后：页面不再跟着手指滚动，也不弹系统菜单，直到松手 */
+  const lockTouch = useCallback(() => {
+    unlockTouch.current?.();
+    const prevent = (e: Event) => {
+      if (e.cancelable) e.preventDefault();
+    };
+    window.addEventListener("touchmove", prevent, { passive: false });
+    window.addEventListener("contextmenu", prevent);
+    unlockTouch.current = () => {
+      window.removeEventListener("touchmove", prevent);
+      window.removeEventListener("contextmenu", prevent);
+      unlockTouch.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     if (!mounted || timeline.length < 2) return;
-    let p: { timer: number; id: number; x: number; y: number } | null = null;
+    // 触屏上，列表页的长按归扇形时间轴（不再触发系统的选字 / 链接菜单）
+    document.documentElement.classList.add("fan-gesture");
+    let p: { timer: number; id: number; x: number; y: number; touch: boolean } | null = null;
     const cancel = () => {
       if (!p) return;
       window.clearTimeout(p.timer);
       p = null;
       setPress(null);
     };
+    const noMenu = (e: Event) => {
+      if (p?.touch) e.preventDefault();
+    };
     const onDown = (e: PointerEvent) => {
-      // 只认鼠标左键；触屏上长按是系统的选字手势，不抢
-      if (e.pointerType !== "mouse" || e.button !== 0 || fanOpen.current) return;
+      if (fanOpen.current || !e.isPrimary) return;
+      const touch = e.pointerType !== "mouse";
+      if (!touch && e.button !== 0) return;
       if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
       const target = e.target as Element;
       if (target.closest("input, textarea, select, [contenteditable]")) return;
@@ -236,13 +258,18 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline, la
         p = null;
         setPress(null);
         window.getSelection()?.removeAllRanges();
-        setFan({ start, hold: { id, y } });
+        if (touch) {
+          lockTouch();
+          navigator.vibrate?.(8);
+        }
+        setFan({ start, hold: { id, y, touch } });
       }, HOLD_MS);
-      p = { timer, id, x, y };
-      setPress({ x, y });
+      p = { timer, id, x, y, touch };
+      setPress({ x, y, touch });
     };
     const onMove = (e: PointerEvent) => {
-      if (p && e.pointerId === p.id && Math.hypot(e.clientX - p.x, e.clientY - p.y) > 8) cancel();
+      if (!p || e.pointerId !== p.id) return;
+      if (Math.hypot(e.clientX - p.x, e.clientY - p.y) > (p.touch ? 10 : 8)) cancel();
     };
     const onUp = (e: PointerEvent) => {
       if (p && e.pointerId === p.id) cancel();
@@ -261,8 +288,11 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline, la
     window.addEventListener("scroll", cancel, { passive: true });
     window.addEventListener("blur", cancel);
     window.addEventListener("click", onClick, true);
+    window.addEventListener("contextmenu", noMenu);
     return () => {
       cancel();
+      unlockTouch.current?.();
+      document.documentElement.classList.remove("fan-gesture");
       window.removeEventListener("pointerdown", onDown);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
@@ -270,8 +300,9 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline, la
       window.removeEventListener("scroll", cancel);
       window.removeEventListener("blur", cancel);
       window.removeEventListener("click", onClick, true);
+      window.removeEventListener("contextmenu", noMenu);
     };
-  }, [mounted, timeline.length]);
+  }, [mounted, timeline.length, lockTouch]);
 
   // 扇形打开期间：不选中文字、不拖动链接，光标是「抓着」
   useEffect(() => {
@@ -354,7 +385,11 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline, la
       </aside>
     )}
     {press && (
-      <span className="hold-ring" style={{ left: press.x, top: press.y }} aria-hidden="true">
+      <span
+        className={press.touch ? "hold-ring hold-ring--touch" : "hold-ring"}
+        style={{ left: press.x, top: press.y }}
+        aria-hidden="true"
+      >
         <svg viewBox="0 0 32 32">
           <circle cx="16" cy="16" r="13" />
         </svg>
@@ -364,12 +399,13 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline, la
       <TimelineFan
         marks={timeline}
         label={t.timeline}
-        hint={t.fanHint}
+        hint={fan.hold.touch ? t.fanHintTouch : t.fanHint}
         start={fan.start}
         hold={fan.hold}
         onJump={(i) => jumpTo(i)}
         onEnd={() => {
           suppressClickUntil.current = performance.now() + 400;
+          unlockTouch.current?.();
         }}
         onClosed={() => setFan(null)}
       />

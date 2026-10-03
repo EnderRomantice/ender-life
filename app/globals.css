@@ -404,6 +404,26 @@ a {
   animation: hold-ring 0.33s linear 0.12s forwards;
 }
 
+/* 手指会挡住按下的位置：圈画大一些，从指尖外沿露出来 */
+.hold-ring--touch {
+  width: 72px;
+  height: 72px;
+  margin: -36px 0 0 -36px;
+}
+
+.hold-ring--touch circle {
+  stroke-width: 0.6;
+}
+
+/* 触屏上，列表页的长按留给扇形时间轴：不选字、不弹链接菜单 */
+@media (pointer: coarse) {
+  html.fan-gesture body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+}
+
 @keyframes hold-ring {
   to {
     stroke-dashoffset: 0;
@@ -506,6 +526,31 @@ html.is-scrubbing * {
 .fan:not(.fan--open) .fan__hint {
   opacity: 0;
   transition: opacity 0.15s ease;
+}
+
+/* 窄屏：扇面贴左边，说明文字收窄、字号小一点 */
+@media (max-width: 640px) {
+  .fan {
+    --fan-inset: 20px;
+  }
+
+  .fan__caption {
+    left: calc(var(--fan-inset) + 118px);
+    max-width: calc(100vw - var(--fan-inset) - 134px);
+  }
+
+  .fan__meta {
+    font-size: 11px;
+  }
+
+  .fan__preview {
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  .fan__hint {
+    bottom: max(24px, env(safe-area-inset-bottom));
+  }
 }
 
 @keyframes fan-caption {

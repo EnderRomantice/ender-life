@@ -21,7 +21,7 @@ export default async function EpiphaniesPage({ params }: Props) {
         initialCursor={nextCursor}
         timeline={getTimeline(lang)}
         lang={lang}
-        t={{ more: t.more, timeline: t.timeline, fanHint: t.fanHint }}
+        t={{ more: t.more, timeline: t.timeline, fanHint: t.fanHint, fanHintTouch: t.fanHintTouch }}
       />
     </ViewTransition>
   );

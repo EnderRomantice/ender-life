@@ -11,7 +11,7 @@ type Props = {
   hint: string;
   start: number;
   /** 长按时按下的指针：打开后一直按着，滑动拨动，松手结束 */
-  hold: { id: number; y: number };
+  hold: { id: number; y: number; touch?: boolean };
   onJump: (index: number) => void;
   /** 松手或取消的那一刻（收拢动画开始前） */
   onEnd: () => void;
