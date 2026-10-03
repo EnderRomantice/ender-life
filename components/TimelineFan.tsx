@@ -8,25 +8,28 @@ import OptionWheel from "./reactbits/OptionWheel";
 type Props = {
   marks: TimelineMark[];
   start: number;
-  /** 长按打开时仍按着的指针，继续拖动即可拨动 */
-  hold: { id: number; y: number } | null;
+  /** 长按时按下的指针：打开后一直按着，滑动拨动，松手结束 */
+  hold: { id: number; y: number };
   onJump: (index: number) => void;
+  /** 松手或取消的那一刻（收拢动画开始前） */
+  onEnd: () => void;
   onClosed: () => void;
 };
 
 /**
- * 长按左侧刻度后展开的扇形时间轴（React Bits · OptionWheel）。
- * 滚轮 / 拖动 / 方向键拨动；点中间那项、回车或拖动后松手跳过去；Esc 或点空白处收起。
+ * 长按后展开的扇形时间轴（React Bits · OptionWheel）。
+ * 按住不放：上下滑动或滚轮拨动；松手跳到停住的那一篇（没动过就只收起）；Esc 取消。
  */
-export default function TimelineFan({ marks, start, hold, onJump, onClosed }: Props) {
+export default function TimelineFan({ marks, start, hold, onJump, onEnd, onClosed }: Props) {
   const [open, setOpen] = useState(true);
   const [selected, setSelected] = useState(start);
   const mark = marks[selected];
 
-  const commit = (index: number) => {
+  const end = (jumpTo: number | null) => {
     if (!open) return;
     setOpen(false);
-    onJump(index);
+    onEnd();
+    if (jumpTo !== null) onJump(jumpTo);
   };
 
   return createPortal(
@@ -35,17 +38,17 @@ export default function TimelineFan({ marks, start, hold, onJump, onClosed }: Pr
       <OptionWheel
         items={marks.map((m) => m.label)}
         defaultSelected={start}
-        open={open}
         hold={hold}
+        open={open}
         label="时间线"
         rowHeight={36}
         tilt={7.5}
         fade={0.16}
-        smoothing={160}
+        smoothing={140}
         inset="var(--fan-inset)"
         onChange={(i) => setSelected(i)}
-        onCommit={commit}
-        onDismiss={() => setOpen(false)}
+        onRelease={(i, moved) => end(moved && i !== start ? i : null)}
+        onCancel={() => end(null)}
         onFolded={onClosed}
         renderItem={(label) => (
           <span className="fan__item">
@@ -61,7 +64,7 @@ export default function TimelineFan({ marks, start, hold, onJump, onClosed }: Pr
         </div>
       )}
       <p className="fan__hint" aria-hidden="true">
-        滚动或拖动 · 点选跳转 · Esc 收起
+        按住上下滑动 · 松手跳转 · Esc 取消
       </p>
     </div>,
     document.body,

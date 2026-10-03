@@ -346,6 +346,46 @@ a {
   opacity: 0;
 }
 
+/* 按住时指针处画一圈细线，画满即展开（短按不会出现） */
+.hold-ring {
+  position: fixed;
+  z-index: 40;
+  width: 32px;
+  height: 32px;
+  margin: -16px 0 0 -16px;
+  pointer-events: none;
+}
+
+.hold-ring svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+.hold-ring circle {
+  fill: none;
+  stroke: var(--ink);
+  stroke-opacity: 0.45;
+  stroke-width: 1;
+  stroke-dasharray: 81.7;
+  stroke-dashoffset: 81.7;
+  animation: hold-ring 0.33s linear 0.12s forwards;
+}
+
+@keyframes hold-ring {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+html.is-scrubbing,
+html.is-scrubbing * {
+  user-select: none !important;
+  cursor: grabbing !important;
+}
+
 /* ———— 扇形时间轴（React Bits · OptionWheel） ———— */
 
 .fan {
@@ -770,6 +810,11 @@ a {
   }
   .timeline--pressing .line-sidebar {
     transform: none;
+  }
+  .hold-ring circle {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 0;
   }
   .avatar img {
     transition: none;

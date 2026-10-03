@@ -5,11 +5,12 @@
  * MIT + Commons Clause (see ./LICENSE.md).
  *
  * 改动：
- * - open：扇面展开 / 收拢（所有项从中线向两侧张开，收拢时反向）
- * - hold：长按打开后指针仍按着时，继续拖动即可拨动，松手即选中
- * - onCommit / onDismiss：点选中项或回车确认；Esc 或点空白处关闭
+ * - 只保留「按住—滑动—松手」：长按打开后指针一直按着，上下滑动拨动扇面
+ *   （内容跟手走），也可以同时用滚轮；松手时通过 onRelease 告诉外面停在哪一项
+ * - open：扇面展开 / 收拢（各项从中线向两侧张开，收拢时反向）
+ * - Esc：取消
  * - renderItem：自定义每一项的内容
- * - 去掉了声音
+ * - 去掉了点击选项、声音
  */
 
 import { useRef, useState, useCallback, useEffect, type CSSProperties, type ReactNode } from "react";
@@ -20,19 +21,20 @@ type Side = "left" | "right";
 export interface OptionWheelProps {
   items: string[];
   defaultSelected?: number;
+  /** 打开时仍按着的指针（id 与当时的纵坐标） */
+  hold: { id: number; y: number };
   onChange?: (index: number, item: string) => void;
-  onCommit?: (index: number) => void;
-  onDismiss?: () => void;
+  /** 松手：停在哪一项、期间是否拨动过 */
+  onRelease?: (index: number, moved: boolean) => void;
+  onCancel?: () => void;
   onFolded?: () => void;
   open?: boolean;
-  hold?: { id: number; y: number } | null;
   renderItem?: (item: string, index: number) => ReactNode;
   label?: string;
   side?: Side;
   rowHeight?: number;
   curve?: number;
   tilt?: number;
-  blur?: number;
   fade?: number;
   minOpacity?: number;
   smoothing?: number;
@@ -46,7 +48,6 @@ interface WheelConfig {
   rowH: number;
   curve: number;
   tilt: number;
-  blur: number;
   fade: number;
   minOpacity: number;
   side: Side;
@@ -56,19 +57,18 @@ interface WheelConfig {
 const OptionWheel = ({
   items,
   defaultSelected = 0,
+  hold,
   onChange,
-  onCommit,
-  onDismiss,
+  onRelease,
+  onCancel,
   onFolded,
   open = true,
-  hold = null,
   renderItem,
   label,
   side = "left",
   rowHeight = 34,
   curve = 1,
   tilt = 6,
-  blur = 0,
   fade = 0.25,
   minOpacity = 0,
   smoothing = 200,
@@ -85,16 +85,18 @@ const OptionWheel = ({
   const lastRef = useRef(0);
   const cfgRef = useRef<WheelConfig>({} as WheelConfig);
   const onChangeRef = useRef(onChange);
+  const onReleaseRef = useRef(onRelease);
+  const onCancelRef = useRef(onCancel);
   const onFoldedRef = useRef(onFolded);
   const selectedRef = useRef(defaultSelected);
   const wheelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dragRef = useRef<{ y: number; start: number; id: number } | null>(null);
-  const dragMovedRef = useRef(false);
+  const movedRef = useRef(false);
   const reducedRef = useRef(false);
   const [selectedIndex, setSelectedIndex] = useState(defaultSelected);
-  const [isDragging, setIsDragging] = useState(false);
 
   onChangeRef.current = onChange;
+  onReleaseRef.current = onRelease;
+  onCancelRef.current = onCancel;
   onFoldedRef.current = onFolded;
   cfgRef.current = {
     count: items.length,
@@ -102,7 +104,6 @@ const OptionWheel = ({
     rowH: Math.max(rowHeight, 1),
     curve,
     tilt,
-    blur,
     fade,
     minOpacity,
     side,
@@ -158,7 +159,6 @@ const OptionWheel = ({
       const opacity = Math.max(cfg.minOpacity, 1 - dist * cfg.fade) * Math.min(1, bloom * 1.4);
       el.style.transform = `translate(${x.toFixed(2)}px, calc(${y.toFixed(2)}px - 50%)) rotate(${rot.toFixed(3)}deg)`;
       el.style.opacity = opacity.toFixed(3);
-      el.style.filter = cfg.blur > 0 ? `blur(${(dist * cfg.blur).toFixed(2)}px)` : "none";
       el.style.visibility = opacity < 0.01 ? "hidden" : "visible";
       el.style.setProperty("--ow-p", Math.max(0, 1 - Math.min(dist, 1)).toFixed(4));
     }
@@ -211,6 +211,7 @@ const OptionWheel = ({
       // Cap each event at one step so notchy mouse wheels move exactly one
       // option per click, while touchpads still scroll continuously.
       const step = Math.max(-1, Math.min(1, delta / cfg.rowH));
+      movedRef.current = true;
       applyTarget(targetRef.current + step, false);
       if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
       wheelTimerRef.current = setTimeout(() => applyTarget(targetRef.current, true), 140);
@@ -222,110 +223,62 @@ const OptionWheel = ({
     };
   }, [applyTarget]);
 
-  // 长按打开时指针还按着：继续拖动就拨动，松手时如果拖动过就直接选中
+  // 按住滑动：内容跟手走（往上滑，更早的条目转到中间）；松手结束
   useEffect(() => {
-    if (!hold) return;
-    const start = targetRef.current;
-    let moved = false;
+    let anchorY = hold.y;
+    let anchor = targetRef.current;
+    let done = false;
     const onMove = (e: PointerEvent) => {
-      if (e.pointerId !== hold.id) return;
-      const dy = e.clientY - hold.y;
-      if (!moved && Math.abs(dy) > 4) moved = true;
-      if (moved) applyTarget(start + dy / cfgRef.current.rowH, false);
+      if (e.pointerId !== hold.id || done) return;
+      const dy = e.clientY - anchorY;
+      if (!movedRef.current && Math.abs(dy) > 4) movedRef.current = true;
+      if (!movedRef.current) return;
+      applyTarget(anchor - dy / cfgRef.current.rowH, false);
+      // 碰到两端时重新取锚点，往回滑立刻有反应
+      if (targetRef.current !== anchor - dy / cfgRef.current.rowH) {
+        anchorY = e.clientY;
+        anchor = targetRef.current;
+      }
     };
-    const onUp = (e: PointerEvent) => {
-      if (e.pointerId !== hold.id) return;
+    const finish = (release: boolean) => {
+      if (done) return;
+      done = true;
       cleanup();
       applyTarget(targetRef.current, true);
-      if (moved) onCommit?.(selectedRef.current);
+      if (release) onReleaseRef.current?.(selectedRef.current, movedRef.current);
+      else onCancelRef.current?.();
+    };
+    const onUp = (e: PointerEvent) => {
+      if (e.pointerId === hold.id) finish(true);
+    };
+    const onCancelPointer = (e: PointerEvent) => {
+      if (e.pointerId === hold.id) finish(false);
+    };
+    const onBlur = () => finish(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        finish(false);
+      }
     };
     const cleanup = () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onUp);
+      window.removeEventListener("pointercancel", onCancelPointer);
+      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("keydown", onKey);
     };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onUp);
+    window.addEventListener("pointercancel", onCancelPointer);
+    window.addEventListener("blur", onBlur);
+    window.addEventListener("keydown", onKey);
     return cleanup;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hold, applyTarget]);
-
-  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    dragRef.current = { y: e.clientY, start: targetRef.current, id: e.pointerId };
-    dragMovedRef.current = false;
-    setIsDragging(true);
-  }, []);
-
-  const handlePointerMove = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      const drag = dragRef.current;
-      if (!drag) return;
-      const dy = e.clientY - drag.y;
-      if (!dragMovedRef.current && Math.abs(dy) > 4) {
-        dragMovedRef.current = true;
-        // Capture only once a real drag starts, so plain clicks still reach
-        // the items and navigate to them.
-        rootRef.current?.setPointerCapture(drag.id);
-      }
-      // 抓着扇面拖：内容跟手走（与长按时「指到哪选到哪」相反，是有意的）
-      if (dragMovedRef.current) applyTarget(drag.start - dy / cfgRef.current.rowH, false);
-    },
-    [applyTarget],
-  );
-
-  const handlePointerEnd = useCallback(() => {
-    if (!dragRef.current) return;
-    dragRef.current = null;
-    setIsDragging(false);
-    if (dragMovedRef.current) applyTarget(targetRef.current, true);
-  }, [applyTarget]);
-
-  const handleItemClick = useCallback(
-    (index: number) => {
-      if (dragMovedRef.current) return;
-      if (index === selectedRef.current && Math.abs(targetRef.current - index) < 0.01) {
-        onCommit?.(index);
-        return;
-      }
-      applyTarget(index, true);
-    },
-    [applyTarget, onCommit],
-  );
-
-  const handleRootClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (dragMovedRef.current) return;
-      if (!(e.target as Element).closest(".option-wheel__item")) onDismiss?.();
-    },
-    [onDismiss],
-  );
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onDismiss?.();
-        return;
-      }
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        onCommit?.(selectedRef.current);
-        return;
-      }
-      let delta: number | null = null;
-      if (e.key === "ArrowUp" || e.key === "ArrowLeft") delta = -1;
-      else if (e.key === "ArrowDown" || e.key === "ArrowRight") delta = 1;
-      if (delta == null) return;
-      e.preventDefault();
-      applyTarget(Math.round(targetRef.current) + delta, true);
-    },
-    [applyTarget, onCommit, onDismiss],
-  );
 
   useEffect(() => {
     applyTarget(targetRef.current, false);
-  }, [items, rowHeight, curve, tilt, blur, fade, minOpacity, side, smoothing, applyTarget]);
+  }, [items, rowHeight, curve, tilt, fade, minOpacity, side, smoothing, applyTarget]);
 
   useEffect(
     () => () => {
@@ -339,17 +292,11 @@ const OptionWheel = ({
     <div
       ref={rootRef}
       role="listbox"
-      tabIndex={0}
+      tabIndex={-1}
       aria-label={label}
       aria-activedescendant={`ow-option-${selectedIndex}`}
-      className={`option-wheel${side === "right" ? " option-wheel--right" : ""}${isDragging ? " option-wheel--dragging" : ""}${className ? ` ${className}` : ""}`}
+      className={`option-wheel${side === "right" ? " option-wheel--right" : ""}${className ? ` ${className}` : ""}`}
       style={{ "--ow-inset": inset } as CSSProperties}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerEnd}
-      onPointerCancel={handlePointerEnd}
-      onClick={handleRootClick}
-      onKeyDown={handleKeyDown}
     >
       {items.map((text, index) => (
         <div
@@ -361,7 +308,6 @@ const OptionWheel = ({
           role="option"
           aria-selected={selectedIndex === index}
           className={`option-wheel__item${selectedIndex === index ? " option-wheel__item--selected" : ""}`}
-          onClick={() => handleItemClick(index)}
         >
           {renderItem ? renderItem(text, index) : text}
         </div>

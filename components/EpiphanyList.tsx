@@ -17,8 +17,8 @@ type Props = {
 const JUMP_OFFSET = 88;
 /** 视口中这个高度（比例）所在的条目算作「正在读」 */
 const READING_LINE = 0.3;
-/** 按住刻度多久展开成扇形时间轴 */
-const HOLD_MS = 380;
+/** 在页面上按住多久展开成扇形时间轴 */
+const HOLD_MS = 450;
 
 /** 从全文页返回时，恢复已加载的条目、测量结果和滚动位置 */
 type Snapshot = {
@@ -201,39 +201,88 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline }: 
     };
   }, [jumpTick, virtualizer]);
 
-  // ———— 长按刻度：展开扇形时间轴 ————
-  const [fan, setFan] = useState<{ start: number; hold: { id: number; y: number } | null } | null>(null);
-  const [pressing, setPressing] = useState(false);
-  const press = useRef<{ timer: number; id: number; x: number; y: number } | null>(null);
-  const firedAt = useRef(0);
+  // ———— 长按（页面任意处，鼠标）：展开扇形时间轴 ————
+  const [fan, setFan] = useState<{ start: number; hold: { id: number; y: number } } | null>(null);
+  const [press, setPress] = useState<{ x: number; y: number } | null>(null);
+  const activeRef = useRef(active);
+  activeRef.current = active;
+  const fanOpen = useRef(false);
+  fanOpen.current = fan !== null;
+  const suppressClickUntil = useRef(0);
 
-  const cancelPress = useCallback(() => {
-    if (press.current) window.clearTimeout(press.current.timer);
-    press.current = null;
-    setPressing(false);
-  }, []);
+  useEffect(() => {
+    if (!mounted || timeline.length < 2) return;
+    let p: { timer: number; id: number; x: number; y: number } | null = null;
+    const cancel = () => {
+      if (!p) return;
+      window.clearTimeout(p.timer);
+      p = null;
+      setPress(null);
+    };
+    const onDown = (e: PointerEvent) => {
+      // 只认鼠标左键；触屏上长按是系统的选字手势，不抢
+      if (e.pointerType !== "mouse" || e.button !== 0 || fanOpen.current) return;
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      const target = e.target as Element;
+      if (target.closest("input, textarea, select, [contenteditable]")) return;
+      const tick = target.closest<HTMLElement>(".timeline [data-index]");
+      const start = tick ? Number(tick.dataset.index) : activeRef.current;
+      const { pointerId: id, clientX: x, clientY: y } = e;
+      const timer = window.setTimeout(() => {
+        p = null;
+        setPress(null);
+        window.getSelection()?.removeAllRanges();
+        setFan({ start, hold: { id, y } });
+      }, HOLD_MS);
+      p = { timer, id, x, y };
+      setPress({ x, y });
+    };
+    const onMove = (e: PointerEvent) => {
+      if (p && e.pointerId === p.id && Math.hypot(e.clientX - p.x, e.clientY - p.y) > 8) cancel();
+    };
+    const onUp = (e: PointerEvent) => {
+      if (p && e.pointerId === p.id) cancel();
+    };
+    // 松手后紧跟着的那次 click 不算数
+    const onClick = (e: MouseEvent) => {
+      if (performance.now() < suppressClickUntil.current) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    window.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", cancel);
+    window.addEventListener("scroll", cancel, { passive: true });
+    window.addEventListener("blur", cancel);
+    window.addEventListener("click", onClick, true);
+    return () => {
+      cancel();
+      window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", cancel);
+      window.removeEventListener("scroll", cancel);
+      window.removeEventListener("blur", cancel);
+      window.removeEventListener("click", onClick, true);
+    };
+  }, [mounted, timeline.length]);
 
-  const onPressStart = (e: React.PointerEvent<HTMLElement>) => {
-    if (e.button !== 0 || fan) return;
-    const btn = (e.target as Element).closest<HTMLElement>("[data-index]");
-    const start = btn ? Number(btn.dataset.index) : active;
-    const { pointerId, clientX, clientY } = e;
-    const timer = window.setTimeout(() => {
-      press.current = null;
-      setPressing(false);
-      firedAt.current = performance.now();
-      setFan({ start, hold: { id: pointerId, y: clientY } });
-    }, HOLD_MS);
-    press.current = { timer, id: pointerId, x: clientX, y: clientY };
-    setPressing(true);
-  };
-
-  const onPressMove = (e: React.PointerEvent<HTMLElement>) => {
-    const p = press.current;
-    if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) > 8) cancelPress();
-  };
-
-  useEffect(() => cancelPress, [cancelPress]);
+  // 扇形打开期间：不选中文字、不拖动链接，光标是「抓着」
+  useEffect(() => {
+    if (!fan) return;
+    const root = document.documentElement;
+    const prevent = (e: Event) => e.preventDefault();
+    root.classList.add("is-scrubbing");
+    document.addEventListener("selectstart", prevent);
+    document.addEventListener("dragstart", prevent);
+    return () => {
+      root.classList.remove("is-scrubbing");
+      document.removeEventListener("selectstart", prevent);
+      document.removeEventListener("dragstart", prevent);
+    };
+  }, [fan]);
 
   const lastIndex = virtualItems.at(-1)?.index ?? -1;
   useEffect(() => {
@@ -281,21 +330,7 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline }: 
     </div>
     {timeline.length > 1 && (
       <aside
-        className={["timeline", pressing && "timeline--pressing", fan && "timeline--fanned"].filter(Boolean).join(" ")}
-        title="按住展开时间轴"
-        onPointerDown={onPressStart}
-        onPointerMove={onPressMove}
-        onPointerUp={cancelPress}
-        onPointerLeave={cancelPress}
-        onPointerCancel={cancelPress}
-        onContextMenu={(e) => e.preventDefault()}
-        onClickCapture={(e) => {
-          // 长按展开后松手产生的 click 不算点击
-          if (performance.now() - firedAt.current < 800) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }}
+        className={["timeline", press && "timeline--pressing", fan && "timeline--fanned"].filter(Boolean).join(" ")}
       >
         <LineSidebar
           items={timeline.map((t) => t.label)}
@@ -312,12 +347,22 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline }: 
         />
       </aside>
     )}
+    {press && (
+      <span className="hold-ring" style={{ left: press.x, top: press.y }} aria-hidden="true">
+        <svg viewBox="0 0 32 32">
+          <circle cx="16" cy="16" r="13" />
+        </svg>
+      </span>
+    )}
     {fan && (
       <TimelineFan
         marks={timeline}
         start={fan.start}
         hold={fan.hold}
         onJump={(i) => jumpTo(i)}
+        onEnd={() => {
+          suppressClickUntil.current = performance.now() + 400;
+        }}
         onClosed={() => setFan(null)}
       />
     )}

@@ -9,14 +9,10 @@
   position: fixed;
   inset: 0;
   overflow: hidden;
-  cursor: grab;
+  cursor: grabbing;
   user-select: none;
   touch-action: none;
   outline: none;
-}
-
-.option-wheel--dragging {
-  cursor: grabbing;
 }
 
 /* 每一项先绝对居中，再由 rAF 沿弧线摆放（transform / opacity 同步） */
@@ -27,7 +23,6 @@
   white-space: nowrap;
   line-height: 1;
   transform-origin: left center;
-  cursor: pointer;
   will-change: transform, opacity;
 }
 
