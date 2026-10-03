@@ -1,0 +1,465 @@
+/* 打字机字体（时间 · 出处）：Courier Prime，本地文件 */
+@font-face {
+  font-family: "Meta Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/courier-prime-latin-400-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Meta Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/courier-prime-latin-ext-400-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --f-display: "IM Fell English", Georgia, serif;
+  /* 中文：朱雀仿宋（缺字时回落到思源宋体）；英文仍走 EB Garamond */
+  --f-zh: "Zhuque Fangsong (technical preview)", "Noto Serif SC", "Songti SC", "STSong";
+  --f-serif: "EB Garamond", var(--f-zh), Georgia, serif;
+  --f-cjk: var(--f-zh), serif;
+  --f-mono: "Meta Mono", "Noto Serif SC", ui-monospace, monospace;
+
+  --paper: #fbf9f5;
+  --ink: #161411;
+  --text: #1f1c18;
+  --muted: #6a645c;
+  --hair: #e6e1d8;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--paper);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  background: var(--paper);
+  font-family: var(--f-serif);
+  font-size: 18px;
+  line-height: 1.95;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: #ece5d6;
+}
+
+.page {
+  max-width: 688px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ———— header ———— */
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 72px 0 0;
+  margin-bottom: 120px;
+}
+
+.wordmark {
+  font-family: var(--f-display);
+  font-style: italic;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.nav {
+  display: flex;
+  gap: 28px;
+  font-family: var(--f-serif);
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.nav a {
+  transition: color 0.3s ease;
+}
+
+.nav a:hover,
+.nav a[aria-current="page"] {
+  color: var(--ink);
+}
+
+/* ———— epiphanies ———— */
+
+.row {
+  padding-bottom: 104px;
+}
+
+.entry {
+  transition:
+    opacity 0.4s ease-out,
+    filter 0.25s ease-out,
+    transform 0.4s ease-out;
+}
+
+.entry.is-veiled {
+  opacity: 0;
+  filter: blur(2px);
+  transform: translateY(4px);
+}
+
+.entry--intro {
+  animation: emerge 0.4s ease-out both;
+}
+
+/* 时间（打字机体 13px）与地点（衬线体 12px）同一行 */
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 1.4em;
+  margin: 0 0 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.meta-time {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+/* 汉字墨迹中心比数字高，略下移让两者视觉居中对齐 */
+.meta-place {
+  font-family: var(--f-serif);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  transform: translateY(0.2px);
+}
+
+.body {
+  color: var(--text);
+}
+
+.body p {
+  margin: 0;
+}
+
+/* 段落之间空一整行，与行高同步 */
+.body p + p {
+  margin-top: 1.95em;
+}
+
+/* 可以点进全文的条目 */
+.entry-link {
+  display: block;
+}
+
+.entry-link .body {
+  transition: color 0.2s ease;
+}
+
+.entry-link .body > :last-child::after {
+  content: "→";
+  display: inline-block;
+  margin-left: 0.5em;
+  color: var(--muted);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.entry-link:hover .body {
+  color: var(--ink);
+}
+
+.entry-link:hover .body > :last-child::after {
+  color: var(--ink);
+  transform: translateX(3px);
+}
+
+/* ———— article ———— */
+
+.article {
+  padding-bottom: 140px;
+  animation: emerge 0.4s ease-out both;
+}
+
+.article-title {
+  margin: 4px 0 40px;
+  font-family: var(--f-serif);
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+
+.article .meta + .prose {
+  margin-top: 28px;
+}
+
+.prose {
+  color: var(--text);
+}
+
+.prose p {
+  margin: 0 0 1.1em;
+}
+
+.prose h2,
+.prose h3 {
+  margin: 2.2em 0 0.8em;
+  font-family: var(--f-serif);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.prose h3 {
+  font-size: 18px;
+}
+
+.prose blockquote {
+  margin: 1.8em 0;
+  padding-left: 1.2em;
+  border-left: 1px solid var(--hair);
+  color: var(--muted);
+}
+
+.prose blockquote p {
+  margin: 0;
+}
+
+.prose hr {
+  width: 48px;
+  height: 1px;
+  margin: 2.8em 0;
+  border: 0;
+  background: var(--hair);
+}
+
+.prose a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--hair);
+}
+
+.prose a:hover {
+  text-decoration-color: currentColor;
+}
+
+.prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 2em 0;
+}
+
+.prose code {
+  font-family: var(--f-mono);
+  font-size: 0.88em;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0 0 1.1em;
+  padding-left: 1.4em;
+}
+
+/* ———— about ———— */
+
+.about {
+  padding-bottom: 140px;
+  animation: emerge 0.4s ease-out both;
+}
+
+.avatar {
+  margin: 0 0 28px;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #efebe3;
+  box-shadow: inset 0 0 0 1px rgba(31, 29, 26, 0.06);
+  display: grid;
+  place-items: center;
+}
+
+/* 头像：平时黑白，悬停时缓缓上色 */
+.avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1);
+  transition: filter 1.2s ease;
+}
+
+.avatar:hover img {
+  filter: grayscale(0);
+}
+
+.avatar span {
+  font-family: var(--f-display);
+  font-style: italic;
+  font-size: 44px;
+  line-height: 1;
+  color: var(--ink);
+  padding-bottom: 4px;
+}
+
+.name {
+  margin: 0;
+  font-family: var(--f-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 40px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.motto {
+  margin: 10px 0 0;
+  font-style: italic;
+  font-size: 19px;
+  color: var(--muted);
+}
+
+.verses {
+  margin-top: 72px;
+  padding-top: 72px;
+  border-top: 1px solid var(--hair);
+  display: grid;
+  gap: 64px;
+}
+
+.verse .body p + p {
+  margin-top: 1em;
+}
+
+.verse .line {
+  display: block;
+}
+
+.source {
+  margin: 16px 0 0;
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+@keyframes emerge {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    font-size: 17px;
+  }
+  .header {
+    padding-top: 48px;
+    margin-bottom: 88px;
+  }
+  .row {
+    padding-bottom: 80px;
+  }
+}
+
+/* ———— about · 简介 ———— */
+
+.bio {
+  margin-top: 28px;
+}
+
+.bio p {
+  margin: 0;
+}
+
+.bio p + p {
+  margin-top: 0.4em;
+}
+
+/* Contact：与简介同字号、同节奏，只用一条细下划线区分链接 */
+.contact {
+  margin-top: 56px;
+}
+
+.contact h2 {
+  margin: 0 0 4px;
+  font-family: var(--f-serif);
+  line-height: 1.4;
+  font-weight: 400;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.contact p {
+  margin: 0;
+}
+
+.contact p + p {
+  margin-top: 0.4em;
+}
+
+.about-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--hair);
+  transition: text-decoration-color 0.3s ease;
+}
+
+.about-link:hover {
+  text-decoration-color: currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar img {
+    transition: none;
+  }
+  .entry,
+  .entry--intro,
+  .about,
+  .article {
+    animation: none;
+    transition: none;
+  }
+  .entry.is-veiled {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
