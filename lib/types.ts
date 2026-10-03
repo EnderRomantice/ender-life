@@ -16,3 +16,6 @@ export type EpiphanyArticle = Epiphany & {
   /** 全文（HTML） */
   html: string;
 };
+
+/** 左侧时间刻度上的一格 */
+export type TimelineMark = { slug: string; label: string; title: string };

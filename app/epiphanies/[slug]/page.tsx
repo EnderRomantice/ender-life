@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ViewTransition } from "react";
 import { getEpiphany } from "@/lib/epiphanies";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,7 @@ export default async function EpiphanyPage({ params }: Params) {
   if (!e) notFound();
 
   return (
+    <ViewTransition>
     <article className="article">
       <div className="meta">
         <time className="meta-time">{e.time}</time>
@@ -25,5 +27,6 @@ export default async function EpiphanyPage({ params }: Params) {
       {e.title && <h1 className="article-title">{e.title}</h1>}
       <div className="prose" dangerouslySetInnerHTML={{ __html: e.html }} />
     </article>
+    </ViewTransition>
   );
 }

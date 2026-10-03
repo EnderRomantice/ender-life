@@ -1,21 +1,34 @@
 import type { Metadata } from "next";
+import { ViewTransition } from "react";
 import { MailIcon, MarkGithubIcon } from "@primer/octicons-react";
 import { site } from "@/lib/site";
+import Magnet from "@/components/reactbits/Magnet";
 
 export const metadata: Metadata = { title: "About" };
 
 /* 图标来自 GitHub 官方的 Octicons（MIT）：邮件与 GitHub 标志，同一套线宽 */
 export default function AboutPage() {
   return (
+    <ViewTransition>
     <article className="about">
-      <figure className="avatar">
-        {site.avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={site.avatar} alt={site.name} />
-        ) : (
-          <span aria-hidden>{site.name.charAt(0)}</span>
-        )}
-      </figure>
+      {/* 光标靠近时，头像轻轻倾向光标 */}
+      <Magnet
+        wrapperClassName="avatar-magnet"
+        padding={48}
+        magnetStrength={10}
+        maxOffset={7}
+        activeTransition="transform 0.45s cubic-bezier(0.2, 0, 0, 1)"
+        inactiveTransition="transform 0.9s cubic-bezier(0.2, 0, 0, 1)"
+      >
+        <figure className="avatar">
+          {site.avatar ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={site.avatar} alt={site.name} />
+          ) : (
+            <span aria-hidden>{site.name.charAt(0)}</span>
+          )}
+        </figure>
+      </Magnet>
 
       {/* 名字已在左上角，这里只留给读屏软件 */}
       <h1 className="sr-only">{site.name}</h1>
@@ -77,5 +90,6 @@ export default function AboutPage() {
         </div>
       )}
     </article>
+    </ViewTransition>
   );
 }

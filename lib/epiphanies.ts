@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { markdown } from "./markdown";
 import { split } from "./excerpt";
-import type { Epiphany, EpiphanyArticle } from "./types";
+import type { Epiphany, EpiphanyArticle, TimelineMark } from "./types";
 
 /**
  * 每条 Epiphany 是 content/epiphanies 下的一个 .md 文件：
@@ -85,4 +85,16 @@ export function getEpiphanies(cursor = 0, limit = PAGE_SIZE): { items: Epiphany[
 /** 单篇的固定链接（列表里不再跳转，但保留地址方便分享） */
 export function getEpiphany(slug: string): EpiphanyArticle | null {
   return all().find((x) => x.slug === slug) ?? null;
+}
+
+/** 左侧时间刻度：所有条目的日期（不含正文），按时间倒序 */
+export function getTimeline(): TimelineMark[] {
+  return all().map((e) => {
+    const m = e.date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return {
+      slug: e.slug,
+      label: m ? `${m[2]}.${m[3]}` : e.time,
+      title: [e.time, e.place].filter(Boolean).join(" · "),
+    };
+  });
 }

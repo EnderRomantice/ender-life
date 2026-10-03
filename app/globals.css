@@ -91,13 +91,42 @@ a {
   color: var(--muted);
 }
 
-.nav a {
-  transition: color 0.3s ease;
+/*
+ * 墨水洇开：悬停时墨色从左向右渗进文字，离开时退回。
+ * 做法借自 React Bits 的 ShinyText（渐变 + background-clip: text），
+ * 换成了一次性的、有终点的过渡，而不是循环的光泽。
+ */
+.nav a,
+.more-label {
+  background-image: linear-gradient(90deg, var(--ink) 0 45%, var(--muted) 55% 100%);
+  background-size: 225% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transition: background-position 0.45s cubic-bezier(0.2, 0, 0, 1);
 }
 
-.nav a:hover,
-.nav a[aria-current="page"] {
-  color: var(--ink);
+.nav a[aria-current="page"],
+.more:focus-visible .more-label {
+  background-position: 0 0;
+}
+
+@media (hover: hover) {
+  .nav a:hover,
+  .more:hover .more-label {
+    background-position: 0 0;
+    transition-duration: 0.9s;
+    transition-timing-function: cubic-bezier(0.3, 0, 0.2, 1);
+  }
+}
+
+@media (forced-colors: active) {
+  .nav a,
+  .more-label {
+    background: none;
+    color: LinkText;
+  }
 }
 
 /* ———— epiphanies ———— */
@@ -243,8 +272,10 @@ a {
   letter-spacing: 0.02em;
 }
 
-.more:hover {
-  color: var(--ink);
+@media (hover: hover) {
+  .more:hover {
+    color: var(--ink);
+  }
 }
 
 .more:focus-visible {
@@ -260,6 +291,33 @@ a {
   transition:
     opacity 0.3s ease,
     visibility 0s linear 0.3s;
+}
+
+/* 左侧时间刻度（React Bits · LineSidebar），只在宽屏的留白里出现 */
+.timeline {
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .timeline {
+    display: block;
+    position: fixed;
+    top: 50%;
+    left: calc(50% - 320px - 150px);
+    max-height: 76vh;
+    padding: 12px 56px 12px 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+    transform: translateY(-50%);
+    z-index: 2;
+    animation: timeline-in 0.6s ease-out 0.5s both;
+  }
+}
+
+@keyframes timeline-in {
+  from {
+    opacity: 0;
+  }
 }
 
 /* ———— article ———— */
@@ -379,6 +437,10 @@ a {
   place-items: center;
 }
 
+.avatar-magnet {
+  width: fit-content;
+}
+
 /* 头像：平时黑白，悬停时缓缓上色 */
 .avatar img {
   display: block;
@@ -443,6 +505,23 @@ a {
   font-size: 13px;
   letter-spacing: 0.02em;
   color: var(--muted);
+}
+
+/* 页面切换（React <ViewTransition>）：旧页先淡出，新页随后淡入，页眉不动 */
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-old(*) {
+  animation-duration: 0.15s;
+  animation-timing-function: cubic-bezier(0.3, 0, 1, 1);
+}
+
+::view-transition-new(*) {
+  animation-duration: 0.24s;
+  animation-delay: 0.06s;
+  animation-timing-function: cubic-bezier(0, 0, 0, 1);
+  animation-fill-mode: both;
 }
 
 @keyframes emerge {
@@ -544,6 +623,20 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+  .nav a,
+  .more-label,
+  .timeline {
+    transition: none;
+    animation: none;
+  }
+  .line-sidebar__label {
+    transform: none;
+  }
   .avatar img {
     transition: none;
   }
