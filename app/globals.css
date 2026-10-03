@@ -434,7 +434,13 @@ a {
 }
 
 .about-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   color: inherit;
+}
+
+.about-link span {
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
@@ -442,8 +448,24 @@ a {
   transition: text-decoration-color 0.3s ease;
 }
 
-.about-link:hover {
+.about-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.3s ease;
+}
+
+.about-link:hover span {
   text-decoration-color: currentColor;
+}
+
+.about-link:hover .about-icon {
+  stroke: var(--ink);
 }
 
 @media (prefers-reduced-motion: reduce) {
