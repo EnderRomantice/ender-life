@@ -6,7 +6,7 @@ import { switchLocalePath, type Locale } from "@/lib/i18n/config";
 
 type Props = {
   lang: Locale;
-  labels: { epiphanies: string; about: string };
+  labels: { epiphanies: string; media: string; about: string };
   switchLabel: string;
   switchTitle: string;
 };
@@ -22,6 +22,7 @@ export default function Nav({ lang, labels, switchLabel, switchTitle }: Props) {
   const other: Locale = lang === "zh" ? "en" : "zh";
   const links = [
     { key: "/", href: `/${lang}`, label: labels.epiphanies },
+    { key: "/media", href: `/${lang}/media`, label: labels.media },
     { key: "/about", href: `/${lang}/about`, label: labels.about },
   ];
 

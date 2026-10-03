@@ -5,7 +5,7 @@ export * from "./config";
 /** 界面文字。新增语言时照着补一份即可。 */
 export const dictionaries = {
   zh: {
-    nav: { epiphanies: "顿悟", about: "关于" },
+    nav: { epiphanies: "顿悟", media: "影像", about: "关于" },
     switchLabel: "EN",
     switchTitle: "Switch to English",
     more: "展开",
@@ -14,9 +14,12 @@ export const dictionaries = {
     fanHint: "按住上下滑动 · 松手跳转 · Esc 取消",
     fanHintTouch: "按住上下滑动 · 松手跳转",
     aboutTitle: "关于",
+    rssTitle: "用 RSS 订阅",
+    mediaEmpty: "这里还没有照片。",
+    lightbox: { close: "关闭", prev: "上一张", next: "下一张", photo: "照片" },
   },
   en: {
-    nav: { epiphanies: "Epiphanies", about: "About" },
+    nav: { epiphanies: "Epiphanies", media: "Media", about: "About" },
     switchLabel: "中文",
     switchTitle: "切换到中文",
     more: "More",
@@ -25,6 +28,9 @@ export const dictionaries = {
     fanHint: "Hold and slide · Release to jump · Esc to cancel",
     fanHintTouch: "Hold and slide · Release to jump",
     aboutTitle: "About",
+    rssTitle: "Subscribe via RSS",
+    mediaEmpty: "No photos yet.",
+    lightbox: { close: "Close", prev: "Previous", next: "Next", photo: "Photo" },
   },
 } satisfies Record<Locale, unknown>;
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
-import { MailIcon, MarkGithubIcon } from "@primer/octicons-react";
+import { MailIcon, MarkGithubIcon, RssIcon } from "@primer/octicons-react";
 import { site } from "@/lib/site";
 import { markdown } from "@/lib/markdown";
 import { getDictionary, isLocale } from "@/lib/i18n";
@@ -73,6 +73,12 @@ export default async function AboutPage({ params }: Props) {
               </a>
             </p>
           )}
+          <p>
+            <a className="about-link" href="/feed.xml" type="application/rss+xml" title={t.rssTitle}>
+              <RssIcon className="about-icon" size={16} aria-hidden />
+              <span>RSS</span>
+            </a>
+          </p>
         </section>
       )}
 

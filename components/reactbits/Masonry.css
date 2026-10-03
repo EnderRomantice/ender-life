@@ -1,0 +1,103 @@
+/*
+ * Masonry — adapted from React Bits (https://reactbits.dev), © 2026 David Haz,
+ * MIT + Commons Clause (see ./LICENSE.md). 需要外层是 inline-size 容器（.media）。
+ */
+
+.masonry {
+  --gap: 10px;
+  --cols: 2;
+  --colw: calc((100cqw - (var(--cols) - 1) * var(--gap)) / var(--cols));
+
+  position: relative;
+  height: calc(var(--h2u) * var(--colw) + var(--h2g) * var(--gap));
+}
+
+.masonry__item {
+  --x: var(--x2);
+  --yu: var(--y2u);
+  --yg: var(--y2g);
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--colw);
+  height: calc(var(--a) * var(--colw));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+  transform: translate(
+    calc(var(--x) * (var(--colw) + var(--gap))),
+    calc(var(--yu) * var(--colw) + var(--yg) * var(--gap))
+  );
+  transition:
+    transform 0.6s cubic-bezier(0.2, 0, 0, 1),
+    width 0.6s cubic-bezier(0.2, 0, 0, 1),
+    height 0.6s cubic-bezier(0.2, 0, 0, 1);
+}
+
+@container (min-width: 520px) {
+  .masonry {
+    --cols: 3;
+    height: calc(var(--h3u) * var(--colw) + var(--h3g) * var(--gap));
+  }
+
+  .masonry__item {
+    --x: var(--x3);
+    --yu: var(--y3u);
+    --yg: var(--y3g);
+  }
+}
+
+.masonry__inner {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  background: #efebe3;
+  animation: masonry-in 0.7s cubic-bezier(0.2, 0, 0, 1) backwards;
+  animation-delay: calc(var(--i) * 60ms);
+  transition: transform 0.35s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.masonry__inner img {
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.masonry__inner img.is-loaded {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .masonry__item:hover .masonry__inner {
+    transform: scale(0.97);
+  }
+}
+
+.masonry__item:focus-visible {
+  outline: none;
+}
+
+.masonry__item:focus-visible .masonry__inner {
+  outline: 1px solid var(--ink);
+  outline-offset: 3px;
+}
+
+@keyframes masonry-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .masonry__item,
+  .masonry__inner {
+    transition: none;
+    animation: none;
+  }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { TimelineMark } from "@/lib/types";
 import OptionWheel from "./reactbits/OptionWheel";
@@ -26,6 +26,7 @@ export default function TimelineFan({ marks, label, hint, start, hold, onJump, o
   const [open, setOpen] = useState(true);
   const [selected, setSelected] = useState(start);
   const mark = marks[selected];
+  const labels = useMemo(() => marks.map((m) => m.label), [marks]);
 
   const end = (jumpTo: number | null) => {
     if (!open) return;
@@ -38,7 +39,7 @@ export default function TimelineFan({ marks, label, hint, start, hold, onJump, o
     <div className={open ? "fan fan--open" : "fan"}>
       <div className="fan__veil" />
       <OptionWheel
-        items={marks.map((m) => m.label)}
+        items={labels}
         defaultSelected={start}
         hold={hold}
         open={open}

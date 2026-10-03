@@ -117,3 +117,8 @@ export function getTimeline(lang: Locale): TimelineMark[] {
     };
   });
 }
+
+/** 全部条目（含全文与排序用的 date），给 RSS 用 */
+export function getAllEpiphanies(): (EpiphanyArticle & { date: string })[] {
+  return all();
+}

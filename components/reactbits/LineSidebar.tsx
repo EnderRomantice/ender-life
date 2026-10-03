@@ -96,10 +96,10 @@ const LineSidebar = ({
     rafRef.current = moving ? requestAnimationFrame(runFrame) : null;
   }, []);
 
+  // 已在运行就不重启：原版每次指针移动都重启循环并重置时间戳，
+  // 导致每帧的 dt 极小、缓动几乎不动，拖动时明显跟不上手
   const startLoop = useCallback(() => {
-    if (rafRef.current != null) {
-      cancelAnimationFrame(rafRef.current);
-    }
+    if (rafRef.current != null) return;
     lastRef.current = performance.now();
     rafRef.current = requestAnimationFrame(runFrame);
   }, [runFrame]);

@@ -9,6 +9,8 @@ import "../globals.css";
 
 export const metadata: Metadata = {
   title: { default: site.name, template: `%s · ${site.name}` },
+  // RSS 自动发现：订阅器填网站首页地址也能找到 /feed.xml
+  alternates: { types: { "application/rss+xml": [{ url: "/feed.xml", title: site.name }] } },
 };
 
 export const viewport: Viewport = {

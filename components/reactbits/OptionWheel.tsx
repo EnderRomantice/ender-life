@@ -91,6 +91,7 @@ const OptionWheel = ({
   const selectedRef = useRef(defaultSelected);
   const wheelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const movedRef = useRef(false);
+  const draggingRef = useRef(false);
   const reducedRef = useRef(false);
   const [selectedIndex, setSelectedIndex] = useState(defaultSelected);
 
@@ -118,7 +119,9 @@ const OptionWheel = ({
     lastRef.current = now;
     const cfg = cfgRef.current;
     const reduced = reducedRef.current;
-    const k = reduced ? 1 : 1 - Math.exp(-dt / (Math.max(cfg.smoothing, 1) / 1000));
+    // 手指 / 鼠标拖动时几乎直接跟随，松手吸附时再用正常的缓动
+    const tau = draggingRef.current ? 18 : cfg.smoothing;
+    const k = reduced ? 1 : 1 - Math.exp(-dt / (Math.max(tau, 1) / 1000));
 
     const target = targetRef.current;
     let next = posRef.current + (target - posRef.current) * k;
@@ -167,10 +170,10 @@ const OptionWheel = ({
     rafRef.current = settled && bloomSettled ? null : requestAnimationFrame(runFrame);
   }, []);
 
+  // 已在运行就不重启：原版每次指针移动都重启循环并重置时间戳，
+  // 导致每帧的 dt 极小、缓动几乎不动，拖动时明显跟不上手
   const startLoop = useCallback(() => {
-    if (rafRef.current != null) {
-      cancelAnimationFrame(rafRef.current);
-    }
+    if (rafRef.current != null) return;
     lastRef.current = performance.now();
     rafRef.current = requestAnimationFrame(runFrame);
   }, [runFrame]);
@@ -223,26 +226,31 @@ const OptionWheel = ({
     };
   }, [applyTarget]);
 
-  // 按住滑动：内容跟手走（往上滑，更早的条目转到中间）；松手结束
+  // 按住滑动：内容跟手走（往上滑，更早的条目转到中间）；松手结束。
+  // 按增量累计：慢慢滑一格对一格，快速划过时按速度放大（最多约 3 倍），长列表也能一下拨远
   useEffect(() => {
-    let anchorY = hold.y;
-    let anchor = targetRef.current;
+    let lastY = hold.y;
+    let lastT = performance.now();
     let done = false;
     const onMove = (e: PointerEvent) => {
       if (e.pointerId !== hold.id || done) return;
-      const dy = e.clientY - anchorY;
-      if (!movedRef.current && Math.abs(dy) > 4) movedRef.current = true;
-      if (!movedRef.current) return;
-      applyTarget(anchor - dy / cfgRef.current.rowH, false);
-      // 碰到两端时重新取锚点，往回滑立刻有反应
-      if (targetRef.current !== anchor - dy / cfgRef.current.rowH) {
-        anchorY = e.clientY;
-        anchor = targetRef.current;
+      if (!movedRef.current) {
+        if (Math.abs(e.clientY - hold.y) <= 4) return;
+        movedRef.current = true;
+        draggingRef.current = true;
       }
+      const now = performance.now();
+      const step = e.clientY - lastY;
+      const v = Math.abs(step) / Math.max(now - lastT, 1); // px/ms
+      lastY = e.clientY;
+      lastT = now;
+      const gain = 1 + Math.min(2, Math.max(0, (v - 0.35) * 1.6));
+      applyTarget(targetRef.current - (step / cfgRef.current.rowH) * gain, false);
     };
     const finish = (release: boolean) => {
       if (done) return;
       done = true;
+      draggingRef.current = false;
       cleanup();
       applyTarget(targetRef.current, true);
       if (release) onReleaseRef.current?.(selectedRef.current, movedRef.current);
