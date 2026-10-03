@@ -15,7 +15,7 @@ export const site = {
   bio: {
     zh: [
       "我是 Ender，一名全栈开发实习生，人在中国成都，远程为旧金山的一家 AI 初创公司工作。",
-      "我热爱音乐，尤其是实验摇滚；也喜欢时尚、阅读和开源。而最让我着迷的是设计：我在意一样东西看起来、用起来是什么感觉，而不只是它能不能用。",
+      "我热爱任何形式的设计和美学，包括但不限于，网页设计，音乐美学。我最喜欢的是实验摇滚与爵士乐（纯爵士会特别喜欢一些）。我也喜欢时尚、阅读和开源。",
       "我对食物很有自己的看法。每到一座城市，我都会去找藏在角落里的好味道——尽管我挑食得厉害，这多少有点矛盾。",
       "我相信人生有无限可能，也给自己定了不少目标。在技术上，我的目标是做出真正被人喜爱、被人使用的开源项目。",
       "这里是我写下想法的地方，你愿意的话，叫它博客也行。如果这里有什么能帮到你、给你一点启发，我会深感荣幸。",
@@ -23,7 +23,7 @@ export const site = {
     ],
     en: [
       "I’m Ender, a full-stack development intern based in Chengdu, China, working remotely for an AI startup in San Francisco.",
-      "I love music, especially experimental rock. I’m also into fashion, reading, and open source. Above all, I’m deeply passionate about design. I care about how things look and feel, not just how they work.",
+      "I love design and aesthetics in every form, including but not limited to web design and the aesthetics of music. My favorites are experimental rock and jazz (I have a special soft spot for pure jazz). I’m also into fashion, reading, and open source.",
       "I have strong opinions about food. I’m always hunting for hidden gems in every city I visit, even though I’m incredibly picky, which is a bit of a contradiction.",
       "I believe life holds endless possibilities, and I have plenty of goals. In tech, mine is to build open-source projects that people genuinely love and use.",
       "This site is where I write down my thoughts; call it a blog, if you like. If anything here helps or inspires you, I’d be truly honored.",
