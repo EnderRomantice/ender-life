@@ -26,8 +26,6 @@ const HOLD_MS = 450;
 
 /** 从全文页返回时，恢复已加载的条目、测量结果和滚动位置 */
 type Snapshot = {
-  /** 快照属于哪种语言：换了语言再后退，不能把另一种语言的条目恢复回来 */
-  lang: Locale;
   items: Epiphany[];
   cursor: number | null;
   measurements: VirtualItem[];
@@ -48,7 +46,7 @@ const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayout
 export default function EpiphanyList({ initialItems, initialCursor, timeline, lang, t }: Props) {
   // 只有浏览器后退/前进时才恢复；从导航点进来则从头开始
   const [restored] = useState(() => {
-    const s = popped && snapshot?.lang === lang ? snapshot : null;
+    const s = popped ? snapshot : null;
     popped = false;
     return s;
   });
@@ -93,7 +91,6 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline, la
   useEffect(
     () => () => {
       snapshot = {
-        lang,
         ...latest.current,
         measurements: virtualizer.measurementsCache,
         scrollY: window.scrollY,
@@ -101,7 +98,7 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline, la
         expanded: expanded.current,
       };
     },
-    [virtualizer, lang],
+    [virtualizer],
   );
 
   const virtualItems = virtualizer.getVirtualItems();
@@ -116,7 +113,7 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline, la
     if (from === null) return Promise.resolve();
     const run = (async () => {
       try {
-        const res = await fetch(`/api/epiphanies?cursor=${from}&lang=${lang}`);
+        const res = await fetch(`/api/epiphanies?cursor=${from}`);
         const data: { items: Epiphany[]; nextCursor: number | null } = await res.json();
         const seen = new Set(store.current.items.map((i) => i.slug));
         const next = [...store.current.items, ...data.items.filter((i) => !seen.has(i.slug))];
@@ -129,7 +126,7 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline, la
     })();
     inflight.current = run;
     return run;
-  }, [lang]);
+  }, []);
 
   // ———— 时间刻度：跟随阅读位置，点击跳转 ————
   const [active, setActive] = useState(0);

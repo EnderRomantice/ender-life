@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import type { Epiphany } from "@/lib/types";
 import { localizePlace } from "@/lib/i18n";
-import { htmlLang, type Locale } from "@/lib/i18n/config";
+import { contentLang, htmlLang, type Locale } from "@/lib/i18n/config";
 
 type Props = {
   item: Epiphany;
@@ -17,7 +17,7 @@ type Props = {
 
 const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-/** 「… More」是界面文字，带上界面语言的 lang（外面的正文可能是中文原文） */
+/** 「… More」是界面文字，带上界面语言的 lang（外面的正文是中文原文） */
 const moreButton = (label: string, lang: string) =>
   `<button type="button" class="more" aria-expanded="false" lang="${lang}">` +
   `<span class="more-dots" aria-hidden="true">…</span><span class="more-label">${label}</span></button>`;
@@ -105,7 +105,7 @@ export default function EpiphanyEntry({ item, order, initial, revealed, expanded
         <time className="meta-time">{item.time}</time>
         {item.place && <span className="meta-place">{localizePlace(item.place, lang)}</span>}
       </div>
-      <div className="body" lang={item.lang}>
+      <div className="body" lang={contentLang}>
         <div
           className="excerpt"
           onClick={item.rest ? onClick : undefined}

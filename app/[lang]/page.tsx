@@ -12,7 +12,7 @@ export default async function EpiphaniesPage({ params }: Props) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   const t = getDictionary(lang);
-  const { items, nextCursor } = getEpiphanies(0, lang);
+  const { items, nextCursor } = getEpiphanies(0);
 
   return (
     <ViewTransition>

@@ -14,5 +14,4 @@ pnpm build && pnpm start
 
 - 影像（Media）：照片放进 `public/media/`，文件名以日期开头（如 `2026-10-04-chengdu-01.jpg`）即可出现在各语言的 `/…/media`；想补地点、说明，在 `content/media/` 放同名 `.md`（格式见 `lib/media.ts` 顶部注释）。新增照片后重新部署。
 - RSS：`/feed.xml`（RSS 2.0，含全文）；页面 `<head>` 带自动发现链接，About 页也有入口。部署后若想固定订阅地址里的域名，可设置环境变量 `SITE_URL`（如 `https://example.com`）。
-- 多语言：`/zh/…`、`/en/…`、`/ru/…`、`/ja/…`，导航右侧的小地球切换；界面文字与地名对照在 `lib/i18n/index.ts`，个人介绍在 `lib/site.ts`（每种语言一份）。
-- 文章译文：在原文旁边放同名加语言后缀的文件，只写正文，例如 `2026-10-02-late-nights.en.md`、`.ru.md`、`.ja.md`；日期、时间、地点沿用原文。某种语言没有译文时显示中文原文（比如诗《伊啦》只有中文）。RSS 只发中文原文。
+- 多语言：`/zh/…`、`/en/…`、`/ru/…`、`/ja/…`，导航右侧的小地球切换；界面文字与地名对照在 `lib/i18n/index.ts`，个人介绍在 `lib/site.ts`（每种语言一份）。文章原文不翻译。
