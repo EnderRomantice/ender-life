@@ -31,7 +31,8 @@ function sourceText(file, source) {
   return strings.join("");
 }
 
-const markdownFiles = await filesIn(path.join(root, "content"), ".md");
+// 译文（xxx.en.md / .ru.md / .ja.md）用各自语言的字体，不放进朱雀仿宋
+const markdownFiles = (await filesIn(path.join(root, "content"), ".md")).filter((file) => !/\.(en|ru|ja)\.md$/.test(file));
 const sourceFiles = [
   ...await filesIn(path.join(root, "app"), ".tsx"),
   ...await filesIn(path.join(root, "components"), ".tsx"),

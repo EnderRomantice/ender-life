@@ -360,13 +360,28 @@ a {
   color: var(--text);
 }
 
-/* 原文（中文）：不随界面语言换字体 */
+/*
+ * 正文（文章、图注）：字体跟着正文自己的语言走，而不是界面语言——
+ * 中文原文在任何界面下都是朱雀仿宋；日文译文换成 Zen Old Mincho；
+ * 英文、俄文译文是 EB Garamond（--f-content 本来就以它开头）
+ */
 .body,
 .prose,
 .article-title,
 .fan__preview,
 .lightbox__text {
   font-family: var(--f-content);
+}
+
+:is(.body, .prose, .article-title, .fan__preview, .lightbox__text):lang(ja) {
+  --f-content: "EB Garamond", "Zen Old Mincho", var(--f-zh), Georgia, serif;
+  line-break: strict;
+}
+
+/* 西文译文：行距比中文收一些（和 About 的英文简介一致） */
+:is(.body, .prose):lang(en),
+:is(.body, .prose):lang(ru) {
+  line-height: 1.75;
 }
 
 /* 中文省略号「……」：西文字体的点贴着基线，抬到汉字的中线上 */

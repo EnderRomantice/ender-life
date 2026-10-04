@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { TimelineMark } from "@/lib/types";
 import OptionWheel from "./reactbits/OptionWheel";
-import { contentLang } from "@/lib/i18n/config";
 
 type Props = {
   marks: TimelineMark[];
@@ -64,7 +63,7 @@ export default function TimelineFan({ marks, label, hint, start, hold, onJump, o
       {mark && (
         <div className="fan__caption" key={mark.slug} aria-live="polite">
           <div className="fan__meta">{mark.title}</div>
-          <p className="fan__preview" lang={contentLang}>{mark.preview}</p>
+          <p className="fan__preview" lang={mark.lang}>{mark.preview}</p>
         </div>
       )}
       <p className="fan__hint" aria-hidden="true">
