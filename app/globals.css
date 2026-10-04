@@ -96,9 +96,13 @@ a {
 }
 
 .nav {
+  --nav-gap: 28px;
+  --lang-gap: 24px;
+  --globe: 14px;
+  position: relative;
   display: flex;
   align-items: baseline;
-  gap: 28px;
+  gap: var(--nav-gap);
   font-family: var(--f-serif);
   font-size: 16px;
   letter-spacing: 0.02em;
@@ -122,6 +126,8 @@ a {
 }
 
 .nav a[aria-current="page"],
+.nav a[aria-current="true"],
+.nav a:focus-visible,
 .more:focus-visible .more-label {
   background-position: 0 0;
 }
@@ -150,19 +156,111 @@ a {
   letter-spacing: 0.03em;
 }
 
-/* ———— 语言 · 小地球 ———— */
+/* ———— 语言 · 小地球 ————
+ * 点地球：导航往右收进地球（左边先淡出），语言选项再从地球往左吐出来；收回时反过来。
+ * 用一道羽化的遮罩扫过去，而不是硬切；语言选项浮在导航原来的位置，不占位。
+ */
 
-/* 不占导航的排版：按钮只有一个图标那么宽，列表浮在上面 */
-.lang {
-  position: relative;
-  align-self: center;
+.nav__links {
   display: flex;
+  align-items: baseline;
+  gap: var(--nav-gap);
 }
 
-.lang__button {
+.nav__langs {
+  position: absolute;
+  top: 0;
+  /* 右边对齐到地球左侧，间距与语言之间一致 */
+  right: calc(var(--globe) + var(--lang-gap));
+  display: flex;
+  align-items: baseline;
+  gap: var(--lang-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.nav__langs[hidden] {
+  display: none;
+}
+
+/* 每个语言名用它自己的字体写（行高、基线仍以 EB Garamond 为准，和导航对齐） */
+.nav__lang--zh {
+  font-family: "EB Garamond", var(--f-zh), serif;
+}
+.nav__lang--en,
+.nav__lang--ru {
+  font-family: "EB Garamond", Georgia, serif;
+}
+.nav__lang--ja {
+  font-family: "EB Garamond", "Zen Old Mincho", serif;
+}
+
+/* 遮罩：左半透明、右半不透明，中间羽化；移动遮罩位置，边界就从左扫到右（或反过来） */
+.nav[data-lang="open"] .nav__links,
+.nav[data-lang="closing"] .nav__links,
+.nav__langs {
+  -webkit-mask-image: linear-gradient(90deg, transparent 45%, #000 55%);
+  mask-image: linear-gradient(90deg, transparent 45%, #000 55%);
+  -webkit-mask-size: 250% 100%;
+  mask-size: 250% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* 打开：导航收进去 → 语言吐出来 */
+.nav[data-lang="open"] .nav__links {
+  animation: nav-into-globe 0.24s cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
+}
+
+.nav[data-lang="open"] .nav__langs {
+  animation: nav-out-of-globe 0.36s 0.16s cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+/* 收回：语言收进去 → 导航吐出来 */
+.nav[data-lang="closing"] .nav__langs {
+  animation: nav-into-globe 0.2s cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
+}
+
+.nav[data-lang="closing"] .nav__links {
+  animation: nav-out-of-globe 0.36s 0.12s cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+@keyframes nav-into-globe {
+  from {
+    -webkit-mask-position: 100% 0;
+    mask-position: 100% 0;
+    transform: none;
+  }
+  to {
+    -webkit-mask-position: 0 0;
+    mask-position: 0 0;
+    transform: translateX(10px);
+    visibility: hidden;
+  }
+}
+
+@keyframes nav-out-of-globe {
+  from {
+    -webkit-mask-position: 0 0;
+    mask-position: 0 0;
+    transform: translateX(10px);
+  }
+  to {
+    -webkit-mask-position: 100% 0;
+    mask-position: 100% 0;
+    transform: none;
+  }
+}
+
+/* 地球：点击区域 28px，但只占图标那么大的位置：和前面文字的间距与导航项之间一致 */
+.nav__globe {
   display: grid;
   place-items: center;
-  /* 点击区域 28px，但只占图标那么大的位置：和前面文字的间距与导航项之间一致 */
+  align-self: center;
   width: 28px;
   height: 28px;
   margin: -6px -7px;
@@ -177,127 +275,26 @@ a {
 }
 
 /* 图标高度与汉字的字面一致（16px 字号 ≈ 14px 字面），中心对齐文字 */
-.lang__button svg {
-  width: 14px;
-  height: 14px;
+.nav__globe svg {
+  width: var(--globe);
+  height: var(--globe);
   fill: currentColor;
   transform: translateY(-0.5px);
 }
 
-@media (max-width: 640px) {
-  .lang__button svg {
-    width: 13px;
-    height: 13px;
-    transform: none;
-  }
-}
-
-.lang__button[aria-expanded="true"] {
+.nav__globe[aria-expanded="true"] {
   color: var(--ink);
 }
 
 @media (hover: hover) {
-  .lang__button:hover {
+  .nav__globe:hover {
     color: var(--ink);
   }
 }
 
-.lang__button:focus-visible {
+.nav__globe:focus-visible {
   outline: 1px solid var(--hair);
   outline-offset: 0;
-}
-
-.lang__list {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + 12px);
-  right: -8px;
-  min-width: 128px;
-  margin: 0;
-  padding: 8px 0;
-  list-style: none;
-  background: var(--paper);
-  border: 1px solid var(--hair);
-  border-radius: 3px;
-  box-shadow: 0 2px 6px -3px rgb(22 20 17 / 0.06);
-  transform-origin: calc(100% - 22px) 0;
-  animation: lang-in 0.22s cubic-bezier(0.2, 0, 0, 1) both;
-}
-
-.lang[data-state="closing"] .lang__list {
-  animation: lang-out 0.14s cubic-bezier(0.4, 0, 1, 1) both;
-  pointer-events: none;
-}
-
-.lang__list[hidden] {
-  display: none;
-}
-
-@keyframes lang-in {
-  from {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.98);
-  }
-}
-
-@keyframes lang-out {
-  to {
-    opacity: 0;
-    transform: translateY(-3px) scale(0.99);
-  }
-}
-
-.lang__item {
-  position: relative;
-  display: block;
-  padding: 3px 22px 3px 30px;
-  font-size: 15px;
-  line-height: 1.9;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  color: var(--muted);
-  transition: color 0.3s ease;
-}
-
-/* 每个语言名用它自己的字体写 */
-.lang__item--zh {
-  font-family: var(--f-zh), serif;
-}
-.lang__item--en,
-.lang__item--ru {
-  font-family: "EB Garamond", Georgia, serif;
-}
-.lang__item--ja {
-  font-family: "EB Garamond", "Zen Old Mincho", serif;
-}
-
-.lang__item[aria-current="true"] {
-  color: var(--ink);
-}
-
-/* 当前语言：左边一个小墨点 */
-.lang__item[aria-current="true"]::before {
-  content: "";
-  position: absolute;
-  left: 15px;
-  top: 50%;
-  width: 4px;
-  height: 4px;
-  margin-top: -2px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-@media (hover: hover) {
-  .lang__item:hover {
-    color: var(--ink);
-  }
-}
-
-.lang__item:focus-visible {
-  outline: none;
-  color: var(--ink);
-  background: #f3efe7;
 }
 
 @media (forced-colors: active) {
@@ -1091,8 +1088,14 @@ html.is-scrubbing * {
     font-size: 17px;
   }
   .nav {
-    gap: 18px;
+    --nav-gap: 18px;
+    /* 四种语言在手机上要给左边的 Ender 留出空 */
+    --lang-gap: 13px;
+    --globe: 13px;
     font-size: 15px;
+  }
+  .nav__globe svg {
+    transform: none;
   }
   .header {
     padding-top: 48px;
@@ -1211,11 +1214,15 @@ html.is-scrubbing * {
   }
   .nav a,
   .more-label,
-  .timeline,
-  .lang__list,
-  .lang[data-state="closing"] .lang__list {
+  .timeline {
     transition: none;
     animation: none;
+  }
+  /* 导航 ⇄ 语言：不播扫过的动画，瞬间换过去（保留终点状态） */
+  .nav .nav__links,
+  .nav .nav__langs {
+    animation-duration: 1ms !important;
+    animation-delay: 0s !important;
   }
   .line-sidebar__label {
     transform: none;
