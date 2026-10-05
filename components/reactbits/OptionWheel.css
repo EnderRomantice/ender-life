@@ -18,12 +18,14 @@
 /* 每一项先绝对居中，再由 rAF 沿弧线摆放（transform / opacity 同步） */
 .option-wheel__item {
   position: absolute;
-  top: 50%;
+  top: var(--ow-center, 50%);
   left: var(--ow-inset);
   white-space: nowrap;
   line-height: 1;
   transform-origin: left center;
   will-change: transform, opacity;
+  /* 由 JS 在第一帧之前摆到起点上；在那之前不露面 */
+  opacity: 0;
 }
 
 .option-wheel--right .option-wheel__item {

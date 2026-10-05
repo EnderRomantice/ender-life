@@ -213,6 +213,7 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline, la
   const fanOpen = useRef(false);
   fanOpen.current = fan !== null;
   const suppressClickUntil = useRef(0);
+  const timelineRef = useRef<HTMLElement>(null);
   const unlockTouch = useRef<(() => void) | null>(null);
 
   /** 手指按住展开后：页面不再跟着手指滚动，也不弹系统菜单，直到松手 */
@@ -367,6 +368,7 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline, la
     </div>
     {timeline.length > 1 && (
       <aside
+        ref={timelineRef}
         className={["timeline", press && "timeline--pressing", fan && "timeline--fanned"].filter(Boolean).join(" ")}
       >
         <LineSidebar
@@ -402,6 +404,7 @@ export default function EpiphanyList({ initialItems, initialCursor, timeline, la
         hint={fan.hold.touch ? t.fanHintTouch : t.fanHint}
         start={fan.start}
         hold={fan.hold}
+        from={timelineRef}
         onJump={(i) => jumpTo(i)}
         onEnd={() => {
           suppressClickUntil.current = performance.now() + 400;

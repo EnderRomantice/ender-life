@@ -522,9 +522,7 @@ a {
 }
 
 .timeline .line-sidebar {
-  transition:
-    transform 0.3s ease,
-    opacity 0.15s ease;
+  transition: transform 0.3s ease;
 }
 
 /* 按住时整列刻度向正文方向「蓄力」，到时间后展开成扇形 */
@@ -538,7 +536,20 @@ a {
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
-.timeline--fanned .line-sidebar {
+/*
+ * 展开扇形时：刻度和日期交给扇面（扇面的每一项正是从这些刻度变形出来的，收拢后再原样换回来），
+ * 两格之间的短刻度淡出
+ */
+.timeline--fanned .line-sidebar__marker,
+.timeline--fanned .line-sidebar__label {
+  visibility: hidden;
+}
+
+.timeline .line-sidebar__item::after {
+  transition: opacity 0.25s ease;
+}
+
+.timeline--fanned .line-sidebar__item::after {
   opacity: 0;
 }
 
@@ -630,34 +641,56 @@ html.is-scrubbing * {
   align-items: center;
 }
 
+/*
+ * 每一项的样子在「左侧时间刻度里的那一格」和「扇面上的一项」之间插值：
+ *   --ow-b  展开进度（0 = 刻度，1 = 扇面）
+ *   --ow-e  那一格在刻度里的强调程度（当前项 / 光标附近，对应 LineSidebar 的 --effect）
+ *   --ow-p  在扇面上离中间有多近（1 = 正中）
+ * 刻度的样子见 reactbits/LineSidebar.css：线长 18px × (0.7 + e × 0.5)、线到日期 28px + e × 6px、
+ * 日期 11px、透明度 e
+ */
+.fan__item {
+  --b: var(--ow-b, 1);
+  --e: var(--ow-e, 0);
+  --p: var(--ow-p, 0);
+}
+
 .fan__tick {
   flex: none;
   width: 18px;
   height: 1px;
-  margin-right: calc(10px + var(--ow-p, 0) * 14px);
-  background: color-mix(in srgb, var(--ink) calc(var(--ow-p, 0) * 100%), #d3ccc0);
+  margin-right: calc(10px + var(--e) * 6px + (var(--p) * 14px - var(--e) * 6px) * var(--b));
+  background: color-mix(
+    in srgb,
+    var(--ink) calc((var(--e) * 0.75 + (var(--p) - var(--e) * 0.75) * var(--b)) * 100%),
+    #d3ccc0
+  );
   transform-origin: left center;
-  transform: scaleX(calc(1 + var(--ow-p, 0) * 0.8));
+  transform: scaleX(calc(0.7 + var(--e) * 0.5 + (0.3 + var(--p) * 0.8 - var(--e) * 0.5) * var(--b)));
 }
 
 .fan__label {
   font-family: var(--f-mono);
   font-size: 13px;
   letter-spacing: 0.06em;
-  color: color-mix(in srgb, var(--ink) calc(var(--ow-p, 0) * 100%), var(--muted));
+  color: color-mix(in srgb, var(--ink) calc((var(--e) + (var(--p) - var(--e)) * var(--b)) * 100%), var(--muted));
+  opacity: calc(var(--e) + (1 - var(--e)) * var(--b));
   transform-origin: left center;
-  transform: scale(calc(1 + var(--ow-p, 0) * 0.25));
+  /* 11px → 13px × (1 + p × 0.25) */
+  transform: scale(calc(0.8462 + (0.1538 + var(--p) * 0.25) * var(--b)));
 }
 
 .fan__caption {
   position: absolute;
   z-index: 2;
-  top: 50%;
+  /* 和扇面的中线对齐（TimelineFan 写入 --fan-y） */
+  top: var(--fan-y, 50%);
   left: calc(var(--fan-inset) + 150px);
   max-width: min(420px, calc(100vw - var(--fan-inset) - 190px));
   transform: translateY(-50%);
   pointer-events: none;
-  animation: fan-caption 0.3s cubic-bezier(0.2, 0, 0, 1) both;
+  /* 扇面差不多张开了，说明文字再出来 */
+  animation: fan-caption 0.3s cubic-bezier(0.2, 0, 0, 1) 0.12s both;
 }
 
 .fan__meta {
