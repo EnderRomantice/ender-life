@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fbf9f5",
+  themeColor: "#f4f3f0",
 };
 
 /** 只有 /zh、/en、/ru、/ja；其他前缀 404（无前缀的地址由 proxy.ts 先重定向） */
